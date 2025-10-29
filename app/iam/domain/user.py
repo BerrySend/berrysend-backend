@@ -1,24 +1,21 @@
+"""
+User domain entity for IAM context.
+"""
 from dataclasses import dataclass
-from datetime import datetime
-import uuid
+
+from app.shared.domain.base_entity import BaseEntity
 
 @dataclass
-class User:
+class User(BaseEntity):
     """
     User is a class that represents a user in the IAM context.
 
     Attributes:
         email (str): the unique email address of the user
         hashed_password (str): the hashed password of the user
-        created_at (datetime): the date and time the user was created
-        updated_at (datetime): the date and time the user was updated
-        id (uuid): the unique id of the user
     """
     email: str
     hashed_password: str
-    created_at: datetime = datetime.now()
-    updated_at: datetime = datetime.now()
-    id: uuid.UUID = uuid.uuid4()
 
     @classmethod
     def create(cls, email: str, hashed_password: str) -> "User":
