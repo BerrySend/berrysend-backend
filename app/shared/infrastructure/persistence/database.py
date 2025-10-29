@@ -20,7 +20,7 @@ MYSQL_PORT = config["MYSQL_PORT"]
 MYSQL_DB = config["MYSQL_DB"]
 
 # Base URL
-BASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}"
+BASE_URL = f"mysql+aiomysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}"
 
 # Database base URL for connection
 DATABASE_URL = f"{BASE_URL}/{MYSQL_DB}"
