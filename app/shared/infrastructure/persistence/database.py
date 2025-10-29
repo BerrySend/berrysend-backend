@@ -1,50 +1,84 @@
-﻿import asyncio
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import create_async_engine
-from app.shared.infrastructure.config.base_config import config
-from app.shared.infrastructure.persistence.base import base
-from app.shared.infrastructure.persistence.engine import engine, async_sesion_local
+"""
+Database initialization and connection management for the BerrySend API.
+"""
+from dotenv import dotenv_values
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-"""
-    This module is responsible for creating the database and tables.
-"""
-async def create_database():
-    url_without_db = str(config.DATABASE_URL).rsplit("/", 1)[0]
-    engine_tmp = create_async_engine(url_without_db, echo = True)
+# Import the .env file for the usage of the variables in a dictionary
+config = dotenv_values(".env")
 
-    async with engine_tmp.begin() as conn:
-        await conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {config.DATABASE_NAME}"))
+# Assign the .env file variables to local variables
+MYSQL_USER = config["MYSQL_USER"]
+MYSQL_PASSWORD = config["MYSQL_PASSWORD"]
+MYSQL_HOST = config["MYSQL_HOST"]
+MYSQL_PORT = config["MYSQL_PORT"]
+MYSQL_DB = config["MYSQL_DB"]
 
-    await engine_tmp.dispose()
+# Base URL
+BASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}"
 
-"""
-    This module is responsible for initializing the tables.
-"""
-async def init_tables():
-    async with engine.begin() as conn:
-        await conn.run_sync(base.metadata.create_all)
+# Database base URL for connection
+DATABASE_URL = f"{BASE_URL}/{MYSQL_DB}"
 
-"""
-    This module is responsible for creating the database and tables.
-"""
-async def main():
-    await create_database()
-    await init_tables()
+# Base variable for SQLAlchemy
+Base = declarative_base()
 
-"""
-    This module is responsible for getting the database session.
-"""
-async def get_db():
-    async with async_sesion_local() as session:
-        yield session
+class Database:
+    """
+    Handles the database connection and automatic creation of it.
 
-"""
-    This module is responsible for initializing the database.
-"""
-async def init_db():
-    async with engine.begin() as conn:
-        await conn.run_sync(base.metadata.create_all)
+    """
+    def __init__(self):
+        """
+        Initialize the database connection.
 
-# Main function
-if __name__ == "__main__":
-    asyncio.run(main())
+        """
+        self.db_name = MYSQL_DB
+        self.engine = None
+        self.SessionLocal = None
+        self.session = None
+
+    def create_database_if_not_exists(self):
+        """
+        Creates the database if it doesn't exist.
+
+        """
+        try:
+            engine_tmp = create_engine(BASE_URL)
+            with engine_tmp.connect() as conn:
+                conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{self.db_name}`"))
+                print(f"The database '{self.db_name}' has been created or checked...")
+        except Exception as e:
+            print(f"Error trying to create the database '{self.db_name}': {e}")
+
+    def connect(self):
+        """
+        Connects to the database and creates the database connection.
+
+        """
+        self.create_database_if_not_exists()
+        self.engine = create_engine(DATABASE_URL, echo=False)
+        self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+        print(f"Connected to the database: '{self.db_name}'.")
+
+    def __enter__(self):
+        """
+        Enters the context manager.
+
+        """
+        if not self.engine:
+            self.connect()
+        self.session = self.SessionLocal()
+        return self.session
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+        Exit the context manager.
+        Args:
+            exc_type: The exception type.
+            exc_value: The exception value.
+            traceback: The exception traceback.
+
+        """
+        self.session.close()
