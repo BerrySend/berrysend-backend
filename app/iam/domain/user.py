@@ -3,7 +3,7 @@ User domain entity for IAM context.
 """
 from dataclasses import dataclass
 
-from app.shared.domain.base_entity import BaseEntity
+from app.shared.domain.models.base_entity import BaseEntity
 
 @dataclass
 class User(BaseEntity):
