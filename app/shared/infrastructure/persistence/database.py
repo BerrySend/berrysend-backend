@@ -1,9 +1,9 @@
 ﻿import asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
-from app.core.base_config import config
-from app.core.persistence.base import base
-from app.core.persistence.engine import engine, async_sesion_local
+from app.shared.infrastructure.config.base_config import config
+from app.shared.infrastructure.persistence.base import base
+from app.shared.infrastructure.persistence.engine import engine, async_sesion_local
 
 """
     This module is responsible for creating the database and tables.
