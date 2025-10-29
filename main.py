@@ -1,6 +1,8 @@
 ﻿from fastapi import FastAPI
 
-# API creation with metadata
+"""
+Defines the base app component with FastAPI
+"""
 app = FastAPI(
     title="BerrySend Backend",
     description="API to register exports of blue berries anc calculate the shortest route",
