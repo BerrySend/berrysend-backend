@@ -5,8 +5,12 @@ from dotenv import dotenv_values
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
+# Choose the environment directly from a local variable
+# Change from 'development' to 'production' if needed.
+ENV = "development"
+
 # Import the development.env file for the usage of the variables in a dictionary
-config = dotenv_values("development.env")
+config = dotenv_values(f"{ENV}.env")
 
 # Assign the development.env file variables to local variables
 MYSQL_USER = config["MYSQL_USER"]
