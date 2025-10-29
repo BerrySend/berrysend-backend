@@ -5,10 +5,10 @@ from dotenv import dotenv_values
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Import the .env file for the usage of the variables in a dictionary
-config = dotenv_values(".env")
+# Import the development.env file for the usage of the variables in a dictionary
+config = dotenv_values("development.env")
 
-# Assign the .env file variables to local variables
+# Assign the development.env file variables to local variables
 MYSQL_USER = config["MYSQL_USER"]
 MYSQL_PASSWORD = config["MYSQL_PASSWORD"]
 MYSQL_HOST = config["MYSQL_HOST"]
