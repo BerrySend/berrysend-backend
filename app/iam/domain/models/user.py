@@ -30,3 +30,12 @@ class User(BaseEntity):
             email=email,
             hashed_password=hashed_password
         )
+
+    @classmethod
+    def change_password(cls, new_hashed_password: str) -> None:
+        """
+        Change the hashed password of the user.
+
+        :param new_hashed_password: The new hashed password
+        """
+        cls.hashed_password = new_hashed_password
