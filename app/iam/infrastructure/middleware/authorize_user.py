@@ -2,6 +2,7 @@
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.iam.domain.models.user import User
 from app.iam.infrastructure.repositories.user_repository import UserRepository
 from app.iam.infrastructure.tokens.token_service import TokenService
 from app.shared.infrastructure.persistence.session_generator import get_db
@@ -13,7 +14,10 @@ token_service = TokenService()
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db),
-):
+) -> User | None:
+    if not token:
+        return None
+
     try:
         payload = token_service.decode_token(token)
         email: str = payload.get("sub")
