@@ -1,6 +1,7 @@
 ﻿"""
 Base repository implementation for generic CRUD operations.
 """
+from datetime import datetime
 from typing import Optional, TypeVar, Generic, Type, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,6 +69,7 @@ class BaseRepository(Generic[TEntity, TModel]):
         :param entity: The entity to be updated.
         :return: The updated entity.
         """
+        entity.updated_date = datetime.now
         model = self.to_model(entity)
         merged = await self._db.merge(model)
         await self._db.commit()
