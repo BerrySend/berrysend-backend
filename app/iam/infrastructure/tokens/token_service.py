@@ -2,9 +2,13 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 45
+from dotenv import dotenv_values
+
+config = dotenv_values("development.env")
+
+SECRET_KEY = config["SECRET_KEY"]
+ALGORITHM = config["ALGORITHM"]
+ACCESS_TOKEN_EXPIRE_MINUTES = int(config["ACCESS_TOKEN_EXPIRE_MINUTES"])
 
 class TokenService:
     @staticmethod
