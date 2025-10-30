@@ -16,26 +16,3 @@ class User(BaseEntity):
     """
     email: str
     hashed_password: str
-
-    @classmethod
-    def create(cls, email: str, hashed_password: str) -> "User":
-        """
-        Method that creates a new user in the IAM context.
-
-        :param email: The email address for creating the user
-        :param hashed_password: The hashed password of the user
-        :return: A new instance of User
-        """
-        return cls(
-            email=email,
-            hashed_password=hashed_password
-        )
-
-    @classmethod
-    def change_password(cls, new_hashed_password: str) -> None:
-        """
-        Change the hashed password of the user.
-
-        :param new_hashed_password: The new hashed password
-        """
-        cls.hashed_password = new_hashed_password
