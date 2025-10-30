@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from dotenv import dotenv_values
+from fastapi import HTTPException
+from jwt import ExpiredSignatureError, InvalidTokenError
 
 config = dotenv_values("development.env")
 
@@ -20,4 +22,9 @@ class TokenService:
 
     @staticmethod
     def decode_token(token: str) -> dict[str, Any]:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        try:
+            return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        except ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token expired")
+        except InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
