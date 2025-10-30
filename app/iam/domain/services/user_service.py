@@ -40,6 +40,9 @@ class UserService:
         try:
             if new_hashed_password.strip() == "":
                 raise ValueError("Password cannot be empty.")
+
+            if new_hashed_password == user.hashed_password:
+                raise ValueError("New password cannot be the same as the old one.")
         except (ValueError, TypeError):
             raise ValueError("Invalid data format.")
 
