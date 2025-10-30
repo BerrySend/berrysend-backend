@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import uuid
 from datetime import datetime
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseEntity:
     """
     Base entity class to be inherited by all entities.

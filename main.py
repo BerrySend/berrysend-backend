@@ -3,6 +3,7 @@ Main initialization for the API
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+
 from app.shared.infrastructure.persistence.database import Database, Base
 
 # The database global instance
@@ -41,16 +42,3 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
-
-@app.on_event("shutdown")
-async def on_shutdown():
-    await db_instance.engine.dispose()
-
-def get_db():
-    """
-    Method that gets a database instance
-
-    Returns: The database instance
-    """
-    with db_instance as db:
-        yield db
