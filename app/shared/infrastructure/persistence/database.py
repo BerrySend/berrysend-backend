@@ -100,7 +100,3 @@ class Database:
 
         """
         await self.engine.dispose()
-
-async def get_db() -> AsyncSession:
-    async with async_session() as session:
-        yield session
