@@ -3,7 +3,7 @@ Database initialization and connection management for the BerrySend API.
 """
 from dotenv import dotenv_values
 from sqlalchemy import text, create_engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_session
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Choose the environment directly from a local variable
