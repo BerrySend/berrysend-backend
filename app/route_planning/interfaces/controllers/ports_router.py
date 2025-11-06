@@ -10,7 +10,7 @@ from app.route_planning.interfaces.schemas.responses.port_response import PortRe
 from app.shared.infrastructure.persistence.session_generator import get_db
 
 # Create a router for the ports
-router = APIRouter(prefix="api/v1/ports", tags=["ports"])
+router = APIRouter(prefix="/api/v1/ports", tags=["ports"])
 
 # Get port application service
 def get_port_app_service(db: AsyncSession = Depends(get_db)) -> "PortApplicationService":
