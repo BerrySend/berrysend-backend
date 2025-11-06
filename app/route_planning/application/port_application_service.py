@@ -53,6 +53,30 @@ class PortApplicationService:
 
             row_id += 1
 
+    async def update_port(self, port_id: str, name: str, port_type: str) -> "Port | None":
+        """
+        Updates the port information.
+
+        :param port_id: The id of the port to update.
+        :param name: The new name of the port.
+        :param port_type: The new type of the port.
+        :return: The updated port if found or success, otherwise None.
+        :exception ValueError: If the port id is invalid or the port is not found.
+        """
+        try:
+            if port_id is None or port_id.strip() == "":
+                raise ValueError("To update a port, you must provide a valid port id.")
+
+            port_to_update: Port = await self.port_repository.get_by_id(port_id)
+            if not port_to_update:
+                raise ValueError("Port not found.")
+
+            updated_port: Port = self.port_service.update_port_info(port_to_update, name, port_type)
+            return updated_port
+        except ValueError as e:
+            raise ValueError(f"Error trying to update port: {e}")
+
+
     async def get_all_ports(self) -> list["Port"]:
         """
         Retrieves all ports from the database.
@@ -62,8 +86,8 @@ class PortApplicationService:
         try:
             ports: list["Port"] = await self.port_repository.get_all()
             return ports
-        except ValueError:
-            raise ValueError("No ports found.")
+        except ValueError as e:
+            raise ValueError(f"Error trying to retrieve ports: {e}.")
 
     async def get_port_by_id(self, port_id: str) -> "Port | None":
         """
@@ -78,5 +102,5 @@ class PortApplicationService:
 
             port: Port = await self.port_repository.get_by_id(port_id)
             return port
-        except ValueError:
-            raise ValueError("No port found.")
+        except ValueError as e:
+            raise ValueError(f"Error trying to retrieve port: {e}")
