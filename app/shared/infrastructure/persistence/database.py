@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
 
 # Database base URL for connection
-DATABASE_URL = settings.database_url
+DATABASE_URL: str = str(settings.database_url())
 
 # Base variable for SQLAlchemy
 Base = declarative_base()
@@ -23,7 +23,7 @@ class Database:
         Initialize the database connection.
 
         """
-        self.db_name = settings.MYSQL_DB
+        self.db_name = str(settings.MYSQL_DB)
         self.engine = None
         self.SessionLocal = None
         self.session = None
