@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped
 
 from app.shared.infrastructure.models.base_model import BaseModelORM
 
-class PortConnection(BaseModelORM):
+class PortConnectionModel(BaseModelORM):
     """
     Model class for mapping the port connection information into the database.
 
