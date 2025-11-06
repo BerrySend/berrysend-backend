@@ -14,7 +14,7 @@ class UserRepository(BaseRepository[User, UserModel]):
         """
         super().__init__(db, UserModel)
 
-    def to_model(self, entity: User) -> UserModel:
+    def to_model(self, entity: User) -> "UserModel":
         """
         Converts a user entity into a user model.
 
@@ -29,7 +29,7 @@ class UserRepository(BaseRepository[User, UserModel]):
             updated_at=entity.updated_at
         )
 
-    def to_entity(self, model: UserModel) -> User:
+    def to_entity(self, model: UserModel) -> "User":
         """
         Converts a user model into a user entity.
 
@@ -44,7 +44,7 @@ class UserRepository(BaseRepository[User, UserModel]):
             updated_at=model.updated_at
         )
 
-    async def get_by_email(self, email: str) -> User | None:
+    async def get_by_email(self, email: str) -> "User | None":
         """
         Fetches a user by its email.
 

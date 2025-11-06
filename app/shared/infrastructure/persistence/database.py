@@ -1,30 +1,14 @@
 """
 Database initialization and connection management for the BerrySend API.
 """
-from dotenv import dotenv_values
 from sqlalchemy import text, create_engine
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Choose the environment directly from a local variable
-# Change from 'development' to 'production' if needed.
-ENV = "development"
-
-# Import the development.env file for the usage of the variables in a dictionary
-config = dotenv_values(f"{ENV}.env")
-
-# Assign the development.env file variables to local variables
-MYSQL_USER = config["MYSQL_USER"]
-MYSQL_PASSWORD = config["MYSQL_PASSWORD"]
-MYSQL_HOST = config["MYSQL_HOST"]
-MYSQL_PORT = config["MYSQL_PORT"]
-MYSQL_DB = config["MYSQL_DB"]
-
-# Base URL
-BASE_URL = f"mysql+aiomysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}"
+from app.config import settings
 
 # Database base URL for connection
-DATABASE_URL = f"{BASE_URL}/{MYSQL_DB}"
+DATABASE_URL: str = str(settings.database_url())
 
 # Base variable for SQLAlchemy
 Base = declarative_base()
@@ -39,7 +23,7 @@ class Database:
         Initialize the database connection.
 
         """
-        self.db_name = MYSQL_DB
+        self.db_name = str(settings.MYSQL_DB)
         self.engine = None
         self.SessionLocal = None
         self.session = None
@@ -49,7 +33,7 @@ class Database:
         Creates the database if it doesn't exist.
         """
         try:
-            engine_tmp = create_engine(BASE_URL.replace("+aiomysql", ""), echo=False)
+            engine_tmp = create_engine(DATABASE_URL.replace("+aiomysql", ""), echo=False)
             with engine_tmp.connect() as conn:
                 conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{self.db_name}`"))
                 print(f"The database '{self.db_name}' has been created or checked...")
@@ -90,13 +74,11 @@ class Database:
             exc_type: The exception type.
             exc_value: The exception value.
             traceback: The exception traceback.
-
         """
         await self.session.close()
 
     async def shutdown(self):
         """
         When the application is shutting down, close the database connection.
-
         """
         await self.engine.dispose()
