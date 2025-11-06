@@ -10,3 +10,15 @@ class UpdatePortRequest(BaseModel):
     """
     name: str = Field(title="The name of the port")
     port_type: str = Field(title="The type of the port")
+
+    # Defines a JSON schema extra field to include examples in the OpenAPI schema.
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "Shanghai",
+                    "port_type": "destination",
+                }
+            ]
+        }
+    }
