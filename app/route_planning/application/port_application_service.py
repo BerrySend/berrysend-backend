@@ -25,7 +25,21 @@ class PortApplicationService:
         :param file_url: The url of the CSV file.
         :exception ValueError: If the data format of the CSV file is invalid.
         """
+        print(f"Attempting to seed ports from {file_url}...")
+
         rows = await read_csv_from_url(file_url)
+
+        if rows is None:
+            print(f"WARNING: Failed to fetch CSV from {file_url}. Skipping port seeding.")
+            print("The application will continue without seeded ports.")
+            return
+
+        if len(rows) == 0:
+            print(f"WARNING: CSV file from {file_url} is empty. No ports to seed.")
+            return
+
+        print(f"Successfully fetched {len(rows)} rows from CSV. Starting to seed ports...")
+
         row_id = 1
 
         for row in rows:
