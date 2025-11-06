@@ -4,7 +4,9 @@ Main initialization for the API
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
+from app.route_planning.application.port_application_service import PortApplicationService
 from app.shared.infrastructure.persistence.database import Database, Base
+from app.config import settings
 
 # The database global instance
 db_instance = Database()
@@ -24,6 +26,11 @@ async def lifespan(_app: FastAPI):
     async with db_instance.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print("Database connection established...")
+
+    # Seed the CSV files into the database
+    async with db_instance.SessionLocal() as session:
+        port_app_service = PortApplicationService(session)
+        await port_app_service.seed_ports(settings.MARITIME_PORTS_CSV_URL)
 
     try:
         yield
