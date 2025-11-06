@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.route_planning.domain.models.port import Port
 from app.route_planning.domain.services.port_service import PortService
 from app.route_planning.infrastructure.repositories.port_repository import PortRepository
-from app.shared.infrastructure.readers.csv_reader import CsvFileReader
+from app.shared.infrastructure.readers.csv_reader import read_csv_from_url
 
 class PortApplicationService:
     def __init__(self, db: AsyncSession):
@@ -17,7 +17,6 @@ class PortApplicationService:
         """
         self.port_service = PortService()
         self.port_repository = PortRepository(db)
-        self.file_reader = CsvFileReader()
 
     async def seed_ports(self, file_url: str) -> None:
         """
@@ -26,7 +25,7 @@ class PortApplicationService:
         :param file_url: The url of the CSV file.
         :exception ValueError: If the data format of the CSV file is invalid.
         """
-        rows = self.file_reader.read(file_url)
+        rows = await read_csv_from_url(file_url)
         row_id = 1
 
         for row in rows:

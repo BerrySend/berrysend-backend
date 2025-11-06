@@ -2,23 +2,22 @@
 Reads CSV files.
 Used when trying to read CSV files and map its contents into the database.
 """
-from dataclasses import dataclass
-import requests
+import httpx
 import csv
 from io import StringIO
 
-@dataclass
-class CsvFileReader:
+async def read_csv_from_url(url: str) -> list[dict]:
+    """
+    Reads a CSV file from a URL.
 
-    @staticmethod
-    def read(url: str) -> list[dict]:
-        """
-        Opens a CSV file and returns its contents as a list of dictionaries.
-
-        :param url: The url to access the CSV file.
-        :return: The list of dictionaries with the contents of the CSV file.
-        """
-        response = requests.get(url)
+    :param url: The URL of the CSV file.
+    :return: The CSV file contents.
+    """
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
         response.raise_for_status()
-        f = StringIO(response.text)
-        return list(csv.DictReader(f))
+        content = response.text
+
+    csv_file = StringIO(content)
+    reader = csv.DictReader(csv_file)
+    return [row for row in reader]
