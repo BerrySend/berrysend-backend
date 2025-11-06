@@ -1,4 +1,4 @@
-﻿from pydantic import BaseModel
+﻿from pydantic import BaseModel, Field
 
 class UpdatePortRequest(BaseModel):
     """
@@ -6,7 +6,7 @@ class UpdatePortRequest(BaseModel):
 
     Attributes:
         name (str): The name of the port.
-        port_type (str): The type of the port (e.g., "initial", "intermediate", "destination").", "
+        port_type (str): The type of the port (e.g., "initial", "intermediate", "destination").
     """
-    name: str
-    port_type: str
+    name: str = Field(title="The name of the port")
+    port_type: str = Field(title="The type of the port")

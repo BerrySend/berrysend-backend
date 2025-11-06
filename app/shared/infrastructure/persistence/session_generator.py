@@ -16,4 +16,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     :return: The async session.
     """
     async with db_instance.SessionLocal() as session:
-        yield session
+        try:
+            yield session
+        finally:
+            session.close()
