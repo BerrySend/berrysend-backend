@@ -1,4 +1,4 @@
-﻿from sqlalchemy import Column, String
+﻿from sqlalchemy import Column, String, Float
 from sqlalchemy.orm import Mapped
 
 from app.shared.infrastructure.models.base_model import BaseModelORM
@@ -18,6 +18,6 @@ class PortModel(BaseModelORM):
 
     name: Mapped[str] = Column(String(255), unique=True, nullable=False)
     country: Mapped[str] = Column(String(255), nullable=False)
-    latitude: Mapped[float] = Column(nullable=False)
-    longitude: Mapped[float] = Column(nullable=False)
+    latitude: Mapped[float] = Column(Float, nullable=False)
+    longitude: Mapped[float] = Column(Float, nullable=False)
     type: Mapped[str] = Column(String(255), nullable=False)
