@@ -26,7 +26,9 @@ class PortRepository(BaseRepository[Port, PortModel]):
             latitude=entity.latitude,
             longitude=entity.longitude,
             country=entity.country,
-            type=entity.type
+            type=entity.type,
+            updated_at=entity.updated_at,
+            created_at=entity.created_at
         )
 
     def to_entity(self, model: PortModel) -> "Port":
@@ -42,5 +44,7 @@ class PortRepository(BaseRepository[Port, PortModel]):
             latitude=model.latitude,
             longitude=model.longitude,
             country=model.country,
-            type=model.type
+            type=model.type,
+            updated_at=model.updated_at,
+            created_at=model.created_at
         )
