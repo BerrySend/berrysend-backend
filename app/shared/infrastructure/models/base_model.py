@@ -3,6 +3,7 @@ Base Model Class for ORM with common columns.
 """
 import uuid
 
+from sqlalchemy import String, Column
 from sqlalchemy.orm import mapped_column, Mapped
 from datetime import datetime
 
@@ -19,6 +20,6 @@ class BaseModelORM(ORMBase):
     """
     __abstract__ = True
 
-    id: Mapped[str] = mapped_column(primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now)
