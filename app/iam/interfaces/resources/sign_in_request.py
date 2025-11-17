@@ -1,12 +1,36 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class SignInRequest(BaseModel):
     """
-    SignInRequest represents the data required for a user to sign in.
-
+    Request schema for user authentication.
+    
+    This schema defines the credentials required to authenticate
+    and obtain an access token.
+    
     Attributes:
-        username (str): The username of the user.
-        password (str): The password of the user.
+        email (str): The user's email address
+        password (str): The user's password
     """
-    username: str
-    password: str
+    
+    email: str = Field(
+        ...,
+        max_length=255,
+        description="The user's email address",
+        example="john.doe@example.com"
+    )
+    
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=72,
+        description="The user's password",
+        example="SecurePass123"
+    )
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "john.doe@example.com",
+                "password": "SecurePass123"
+            }
+        }
