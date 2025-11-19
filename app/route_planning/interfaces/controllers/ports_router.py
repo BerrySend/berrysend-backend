@@ -7,6 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.route_planning.application.port_application_service import PortApplicationService
 from app.route_planning.application.port_connection_application_service import PortConnectionApplicationService
 from app.route_planning.domain.models.port import Port
+from app.route_planning.interfaces.assemblers.connection_response_from_entity_assembler import \
+    assemble_connection_response_from_entity
+from app.route_planning.interfaces.assemblers.port_response_from_entity_assembler import \
+    assemble_port_response_from_entity
 from app.route_planning.interfaces.controllers.port_connections_router import get_connection_app_service
 from app.route_planning.interfaces.schemas.responses.port_connection_response import PortConnectionResponse
 from app.route_planning.interfaces.schemas.responses.port_response import PortResponse
@@ -57,18 +61,13 @@ async def get_port_by_id(
         port: Port = await port_app_service.get_port_by_id(port_id)
         if not port:
             response.status_code = status.HTTP_404_NOT_FOUND
-            return None
-        return PortResponse(
-            id=port.id,
-            name=port.name,
-            latitude=port.latitude,
-            longitude=port.longitude,
-            country=port.country,
-            type=port.type
-        )
-    except ValueError:
+            return {"error": "Port for given id not found"}
+
+        response = assemble_port_response_from_entity(port)
+        return response
+    except ValueError as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
-        return None
+        return {"error": str(e)}
 
 
 @router.get("/", response_model=list[PortResponse], status_code=status.HTTP_200_OK)
@@ -87,12 +86,14 @@ async def get_all_ports(
         ports: list[Port] = await port_app_service.get_all_ports()
         if len(ports) == 0:
             response.status_code = status.HTTP_404_NOT_FOUND
-            return []
-        ports_response = [PortResponse(**port.__dict__) for port in ports]
+            return {"error": "Ports not found"}
+        ports_response = []
+        for port in ports:
+            ports_response.append(assemble_port_response_from_entity(port))
         return ports_response
-    except ValueError:
+    except ValueError as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
-        return []
+        return {"error": str(e)}
 
 @router.get("/{port_id}/connections", response_model=list[PortConnectionResponse], status_code=status.HTTP_200_OK)
 async def get_connections_by_port_id(
@@ -113,21 +114,12 @@ async def get_connections_by_port_id(
         connections = await connection_app_service.get_connections_by_port_id(port_id)
         if len(connections) == 0:
             response.status_code = status.HTTP_404_NOT_FOUND
-            return []
+            return {"error": "Connections for given port id not found"}
 
         responses = []
         for connection in connections:
-            responses.append(PortConnectionResponse(
-                id=connection.id,
-                port_a_id=connection.port_a_id,
-                port_b_id=connection.port_b_id,
-                distance_km=connection.distance_km,
-                estimated_travel_time_hours=connection.time_hours,
-                cost_usd=connection.cost_usd,
-                route_type=connection.route_type,
-                is_restricted=connection.is_restricted
-            ))
+            responses.append(assemble_connection_response_from_entity(connection))
         return responses
-    except ValueError:
+    except ValueError as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
-        return None
+        return {"error": str(e)}
