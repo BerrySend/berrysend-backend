@@ -23,6 +23,7 @@ class UserRepository(BaseRepository[User, UserModel]):
         """
         return UserModel(
             id=entity.id,
+            full_name=entity.full_name,
             email=entity.email,
             hashed_password=entity.hashed_password,
             created_at=entity.created_at,
@@ -38,6 +39,7 @@ class UserRepository(BaseRepository[User, UserModel]):
         """
         return User(
             id=model.id,
+            full_name=model.full_name,
             email=model.email,
             hashed_password=model.hashed_password,
             created_at=model.created_at,

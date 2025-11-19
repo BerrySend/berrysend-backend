@@ -1,17 +1,20 @@
-﻿"""
+"""
 Main initialization for the API
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.route_planning.application.port_application_service import PortApplicationService
-from app.shared.infrastructure.persistence.database import Database, Base
+from app.shared.infrastructure.persistence.database import Database, Base, create_tables
 from app.config import settings
 from app.route_planning.interfaces.controllers.ports_router import router as ports_router
+from app.iam.interfaces.controllers.auth_controller import auth_router
 
 # Import all the ORM models here BEFORE creating tables
 # This ensures SQLAlchemy knows about all models when creating the schema
 from app.route_planning.infrastructure.models.port_model import PortModel
+from app.iam.infrastructure.models.user_model import UserModel
+from app.route_planning.infrastructure.models.port_connection_model import PortConnectionModel
 
 # The database global instance
 db_instance = Database()
@@ -28,6 +31,10 @@ async def lifespan(_app: FastAPI):
 
     db_instance.connect()
     print("Database connection established...")
+
+    # Create all tables if they don't exist
+    await create_tables()
+    print("Database tables ready...")
 
     # Seed the CSV files into the database
     async with db_instance.SessionLocal() as session:
@@ -70,4 +77,5 @@ async def health_check():
         return {"status": "unhealthy", "error": str(e)}
 
 # Include the routers for all the endpoints
+app.include_router(auth_router)
 app.include_router(ports_router)
