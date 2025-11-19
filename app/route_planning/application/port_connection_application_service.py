@@ -11,7 +11,7 @@ from app.route_planning.domain.models.port_connection import PortConnection
 class PortConnectionApplicationService:
     def __init__(self, db: AsyncSession):
         """
-        Initialize the port connection application service with port connection service and repository.
+        Initialize the port connection application service with the port connection service and repository.
 
         :param db: The database session.
         """
@@ -78,7 +78,7 @@ class PortConnectionApplicationService:
 
         :return: A list of all port connections.
 
-        :exception Exception: If there is an error retrieving the connections.
+        :exception Exception: If there is an error while retrieving the connections.
         """
         try:
             connections: list["PortConnection"] = await self.port_connection_repository.get_all()
@@ -94,7 +94,7 @@ class PortConnectionApplicationService:
         :return: The port connection if found, otherwise None.
 
         :exception ValueError: If the connection ID is invalid.
-        :exception Exception: If there is an error retrieving the connection.
+        :exception Exception: If there is an error while retrieving the connection.
         """
         try:
             if connection_id is None or connection_id.strip() == "":
@@ -113,7 +113,7 @@ class PortConnectionApplicationService:
         :return: The deleted port connection if found, otherwise None.
 
         :exception ValueError: If the connection ID is invalid.
-        :exception Exception: If there is an error deleting the connection.
+        :exception Exception: If there is an error while deleting the connection.
         """
         try:
             if connection_id is None or connection_id.strip() == "":
@@ -129,14 +129,14 @@ class PortConnectionApplicationService:
         Update a port connection's details.
 
         :param connection_id: The ID of the port connection to update.
-        :param distance_km: The new distance in kilometers.
+        :param distance_km: The new distance, in kilometers.
         :param time_hours: The new time in hours.
         :param cost_usd: The new cost in USD.
         :param is_restricted: The new restriction status.
         :return: The updated port connection if found, otherwise None.
 
         :exception ValueError: If the connection ID is invalid or the connection is not found.
-        :exception Exception: If there is an error updating the connection.
+        :exception Exception: If there is an error while updating the connection.
         """
         try:
             if connection_id is None or connection_id.strip() == "":
@@ -157,21 +157,21 @@ class PortConnectionApplicationService:
         except Exception as e:
             raise Exception(f"Error updating connection: {e}")
 
-    async def get_connections_for_port(self, port_id: str) -> list["PortConnection"]:
+    async def get_connection_by_id(self, connection_id: str) -> "PortConnection | None":
         """
-        Retrieve all port connections for a specific port.
+        Retrieve a port connection by its identifier.
 
-        :param port_id: The ID of the port.
-        :return: A list of port connections associated with the given port.
+        :param connection_id: The ID of the connection.
+        :return: A port connection if found, otherwise None.
 
-        :exception ValueError: If the port ID is invalid.
-        :exception Exception: If there is an error retrieving the connections.
+        :exception ValueError: If the connection ID is invalid.
+        :exception Exception: If there is an error while retrieving the connection.
         """
         try:
-            if port_id is None or port_id.strip() == "":
-                raise ValueError("To retrieve connections, you must provide a valid port ID.")
+            if connection_id is None or connection_id.strip() == "":
+                raise ValueError("To retrieve a connection, you must provide a valid connection ID.")
 
-            connections: list["PortConnection"] = await self.port_connection_repository.get_connections_by_port_id(port_id)
-            return connections
+            connection = await self.port_connection_repository.get_by_id(connection_id)
+            return connection
         except Exception as e:
-            raise Exception(f"Error retrieving connections for port: {e}")
+            raise Exception(f"Error retrieving the connection: {e}")
