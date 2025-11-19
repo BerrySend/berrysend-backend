@@ -86,7 +86,7 @@ class PortConnectionApplicationService:
         except Exception as e:
             raise Exception(f"Error retrieving connections: {e}")
 
-    async def get_connection_by_id(self, connection_id: str) -> "PortConnection | None":
+    async def get_connections_by_port_id(self, connection_id: str) -> list["PortConnection"]:
         """
         Retrieve a port connection by its ID.
 
@@ -100,8 +100,8 @@ class PortConnectionApplicationService:
             if connection_id is None or connection_id.strip() == "":
                 raise ValueError("To retrieve a connection, you must provide a valid connection ID.")
 
-            connection: "PortConnection | None" = await self.port_connection_repository.get_by_id(connection_id)
-            return connection
+            connections = await self.port_connection_repository.get_connections_by_port_id(connection_id)
+            return connections
         except Exception as e:
             raise Exception(f"Error retrieving connection: {e}")
 
