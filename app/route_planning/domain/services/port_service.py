@@ -55,16 +55,15 @@ class PortService:
         :raises ValueError: If the name or port type are empty.
         """
         try:
-            if name is not "":
+            if name != "":
                 if name.strip() == "":
                     raise ValueError("Input name cannot be empty.")
-            if port_type is not "":
+                port.name = name
+            if port_type != "":
                 if port_type.strip() == "":
                     raise ValueError("Input port type cannot be empty.")
+                port.type = port_type
         except (ValueError, TypeError):
             raise ValueError("Invalid data format.")
-
-        port.name = name
-        port.type = port_type
 
         return port
