@@ -1,3 +1,4 @@
+from sqlalchemy import Result, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.route_planning.infrastructure.models.port_connection_model import PortConnectionModel
@@ -50,3 +51,17 @@ class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionMode
             route_type=model.route_type,
             is_restricted=model.is_restricted
         )
+
+    async def get_connections_by_port_id(self, port_id: str) -> list["PortConnection"]:
+        """
+        Retrieve all port connections for a given port id.
+
+        :param port_id: The id of the port.
+
+        :return: A list of port connections associated with the given port id.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.port_a_id == port_id)
+        )
+        model = result.scalars().all()
+        return [self.to_entity(m) for m in model]

@@ -156,3 +156,22 @@ class PortConnectionApplicationService:
             return updated_connection
         except Exception as e:
             raise Exception(f"Error updating connection: {e}")
+
+    async def get_connections_for_port(self, port_id: str) -> list["PortConnection"]:
+        """
+        Retrieve all port connections for a specific port.
+
+        :param port_id: The ID of the port.
+        :return: A list of port connections associated with the given port.
+
+        :exception ValueError: If the port ID is invalid.
+        :exception Exception: If there is an error retrieving the connections.
+        """
+        try:
+            if port_id is None or port_id.strip() == "":
+                raise ValueError("To retrieve connections, you must provide a valid port ID.")
+
+            connections: list["PortConnection"] = await self.port_connection_repository.get_connections_by_port_id(port_id)
+            return connections
+        except Exception as e:
+            raise Exception(f"Error retrieving connections for port: {e}")
