@@ -10,6 +10,7 @@ from app.route_planning.application.port_connection_application_service import P
 from app.shared.infrastructure.persistence.database import Database, create_tables
 from app.config import settings
 from app.route_planning.interfaces.controllers.ports_router import router as ports_router
+from app.route_planning.interfaces.controllers.port_connections_router import router as connections_router
 from app.iam.interfaces.controllers.auth_controller import auth_router
 
 # Import all the ORM models here BEFORE creating tables
@@ -92,3 +93,4 @@ async def health_check():
 # Include the routers for all the endpoints
 app.include_router(auth_router)
 app.include_router(ports_router)
+app.include_router(connections_router)
