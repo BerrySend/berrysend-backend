@@ -18,8 +18,8 @@ class Settings(BaseSettings):
 
     # JWT Settings
     JWT_SECRET_KEY: str = "secret_key_huh"
-    JWT_ALGORITHM: str = "algorithm"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     def database_url(self) -> str:
         """
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
         """
         Configuration for the Settings class.
         """
-        env_file = "suspicious_file"
+        env_file = "development.env"
         env_file_encoding = "utf-8"
 
 # Global instance for the Settings class
