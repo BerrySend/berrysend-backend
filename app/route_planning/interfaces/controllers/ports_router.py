@@ -41,7 +41,6 @@ async def get_port_by_id(
     )],
     response: Response,
     port_app_service: PortApplicationService = Depends(get_port_app_service),
-    current_user: User = Depends(get_current_user)
 ) -> Any:
     """
     Endpoint to retrieve a port by its id.
@@ -72,7 +71,6 @@ async def get_port_by_id(
 async def get_all_ports(
     response: Response,
     port_app_service: PortApplicationService = Depends(get_port_app_service),
-    current_user: User = Depends(get_current_user)
 ) -> Any:
     """
     Retrieve all ports.
