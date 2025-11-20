@@ -9,7 +9,9 @@ class PortConnection(BaseEntity):
 
     Attributes:
         port_a_id (str): The id of the port a.
+        port_a_name (str): The name of the port a.
         port_b_id (str): The id of the port b.
+        port_b_name (str): The name of the port b.
         distance_km (float): The distance between the two ports in kilometers.
         time_hours (float): The time between two ports in hours.
         cost_usd (float): The cost of transport between two ports in dollars.
@@ -19,7 +21,9 @@ class PortConnection(BaseEntity):
     Here we can add more types of restrictions that correspond to the connection of the two ports.
     """
     port_a_id: str
+    port_a_name: str
     port_b_id: str
+    port_b_name: str
     distance_km: float
     time_hours: float
     cost_usd: float

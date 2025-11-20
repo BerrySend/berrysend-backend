@@ -25,7 +25,9 @@ class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionMode
         return PortConnectionModel(
             id=entity.id,
             port_a_id=entity.port_a_id,
+            port_a_name=entity.port_a_name,
             port_b_id=entity.port_b_id,
+            port_b_name=entity.port_b_name,
             distance_km=entity.distance_km,
             time_hours=entity.time_hours,
             cost_usd=entity.cost_usd,
@@ -44,7 +46,9 @@ class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionMode
         return PortConnection(
             id=model.id,
             port_a_id=model.port_a_id,
+            port_a_name=model.port_a_name,
             port_b_id=model.port_b_id,
+            port_b_name=model.port_b_name,
             distance_km=model.distance_km,
             time_hours=model.time_hours,
             cost_usd=model.cost_usd,
