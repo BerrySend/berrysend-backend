@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.engine.reflection import Inspector
 
 # revision identifiers, used by Alembic.
 revision: str = '8bd5cc0a06d2'
@@ -27,8 +27,17 @@ def upgrade() -> None:
     - Ensures email is unique and indexed
     - Ensures password column exists
     """
+    # Get database connection and inspector
+    bind = op.get_bind()
+    inspector = Inspector.from_engine(bind)
+
+    # Get the list of column names in the 'users' table
+    columns = [c['name'] for c in inspector.get_columns('users')]
+
     # Add a full_name column to the user's table
-    op.add_column('users', sa.Column('full_name', sa.String(length=100), nullable=False, server_default=''))
+    if 'full_name' not in columns:
+        # ... The original add_column code ...
+        op.add_column('users', sa.Column('full_name', sa.String(length=100), nullable=False, server_default=''))
     
     # Remove server_default after the column is created
     op.alter_column('users', 'full_name', server_default=None)
