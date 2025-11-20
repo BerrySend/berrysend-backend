@@ -2,7 +2,9 @@
 Main initialization for the API
 """
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from app.port_management.application.port_application_service import PortApplicationService
 from app.port_management.application.port_connection_application_service import PortConnectionApplicationService
@@ -84,11 +86,18 @@ async def health_check():
     """Check if the database and tables are ready"""
     try:
         async with db_instance.SessionLocal() as session:
-            from sqlalchemy import text
             await session.execute(text("SELECT 1"))
-            return {"status": "healthy", "database": "connected"}
+
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={"status": "healthy", "database": "connected"}
+        )
+
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "unhealthy", "error": str(e)}
+        )
 
 # Include the routers for all the endpoints
 app.include_router(auth_router)
