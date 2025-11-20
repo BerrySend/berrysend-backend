@@ -11,7 +11,7 @@ class PortService:
         pass
 
     @staticmethod
-    def create_port(name: str, country: str, port_type: str, latitude: float, longitude: float) -> "Port":
+    def create_port(name: str, country: str, port_type: str, latitude: float, longitude: float, capacity: float) -> "Port":
         """
         Creates a new port.
 
@@ -20,6 +20,8 @@ class PortService:
         :param port_type: The type of the port (e.g., initial, intermediate, destination).
         :param latitude: The latitude coordinate of the port.
         :param longitude: The longitude coordinate of the port.
+        :param capacity: The capacity of the port, in tons.
+
         :return: A newly created instance of Port.
 
         :raises ValueError: If the latitude or longitude are invalid or the name, country, or port type are empty.
@@ -27,6 +29,7 @@ class PortService:
         try:
             latitude = float(latitude)
             longitude = float(longitude)
+            capacity = float(capacity)
             if latitude < -90 or latitude > 90:
                 raise ValueError("Latitude must be between -90 and 90")
             if longitude < -180 or longitude > 180:
@@ -40,16 +43,18 @@ class PortService:
         except (ValueError, TypeError):
             raise ValueError("Invalid data format.")
 
-        return Port(name=name, country=country, latitude=latitude, longitude=longitude, type=port_type)
+        return Port(name=name, country=country, latitude=latitude, longitude=longitude, type=port_type, capacity=capacity)
 
     @staticmethod
-    def update_port_info(port: Port, name: str="", port_type: str="") -> "Port":
+    def update_port_info(port: Port, name: str="", port_type: str="", capacity: float =0) -> "Port":
         """
         updates the information of a port
 
         :param port: The port to be updated.
         :param name: The updated name of the port.
         :param port_type: The updated type of the port.
+        :param capacity: The updated capacity of the port.
+
         :return: The updated port.
 
         :raises ValueError: If the name or port type are empty.
@@ -63,6 +68,8 @@ class PortService:
                 if port_type.strip() == "":
                     raise ValueError("Input port type cannot be empty.")
                 port.type = port_type
+            if capacity != 0:
+                port.capacity = capacity
         except (ValueError, TypeError):
             raise ValueError("Invalid data format.")
 

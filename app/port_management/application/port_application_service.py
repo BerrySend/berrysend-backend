@@ -49,13 +49,15 @@ class PortApplicationService:
                 port_type: str = row["type"].strip()
                 latitude: float = float(row["latitude"])
                 longitude: float = float(row["longitude"])
+                capacity: float = float(row["capacity"])
 
                 port = self.port_service.create_port(
                     name=name,
                     country=country,
                     port_type=port_type,
                     latitude=latitude,
-                    longitude=longitude
+                    longitude=longitude,
+                    capacity=capacity
                 )
 
                 await self.port_repository.create(port)
@@ -66,7 +68,7 @@ class PortApplicationService:
 
             row_id += 1
 
-    async def update_port(self, port_id: str, name: str, port_type: str) -> "Port | None":
+    async def update_port(self, port_id: str, name: str, port_type: str, port_capacity: float) -> "Port | None":
         """
         Updates the port information.
 
@@ -84,7 +86,8 @@ class PortApplicationService:
             if not port_to_update:
                 raise ValueError("Port not found.")
 
-            updated_port: Port = self.port_service.update_port_info(port_to_update, name, port_type)
+            updated_port: Port = self.port_service.update_port_info(port_to_update, name, port_type, port_capacity)
+            await self.port_repository.update(updated_port)
             return updated_port
         except ValueError as e:
             raise ValueError(f"Error trying to update port: {e}")
@@ -101,6 +104,7 @@ class PortApplicationService:
             return ports
         except ValueError as e:
             raise ValueError(f"Error trying to retrieve ports: {e}.")
+
 
     async def get_port_by_id(self, port_id: str) -> "Port | None":
         """
