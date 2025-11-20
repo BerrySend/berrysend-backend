@@ -1,9 +1,9 @@
 from sqlalchemy import Result, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.route_planning.infrastructure.models.port_connection_model import PortConnectionModel
+from app.port_management.infrastructure.models.port_connection_model import PortConnectionModel
 from app.shared.infrastructure.repositories.base_repository import BaseRepository, TModel, TEntity
-from app.route_planning.domain.models.port_connection import PortConnection
+from app.port_management.domain.models.port_connection import PortConnection
 
 class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionModel]):
     def __init__(self, db: AsyncSession):

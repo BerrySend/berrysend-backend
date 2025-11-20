@@ -4,16 +4,16 @@ from fastapi import APIRouter, Depends, status, Path, Response
 from fastapi.openapi.models import Example
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.route_planning.application.port_application_service import PortApplicationService
-from app.route_planning.application.port_connection_application_service import PortConnectionApplicationService
-from app.route_planning.domain.models.port import Port
-from app.route_planning.interfaces.assemblers.connection_response_from_entity_assembler import \
+from app.port_management.application.port_application_service import PortApplicationService
+from app.port_management.application.port_connection_application_service import PortConnectionApplicationService
+from app.port_management.domain.models.port import Port
+from app.port_management.interfaces.assemblers.connection_response_from_entity_assembler import \
     assemble_connection_response_from_entity
-from app.route_planning.interfaces.assemblers.port_response_from_entity_assembler import \
+from app.port_management.interfaces.assemblers.port_response_from_entity_assembler import \
     assemble_port_response_from_entity
-from app.route_planning.interfaces.controllers.port_connections_router import get_connection_app_service
-from app.route_planning.interfaces.schemas.responses.port_connection_response import PortConnectionResponse
-from app.route_planning.interfaces.schemas.responses.port_response import PortResponse
+from app.port_management.interfaces.controllers.port_connections_router import get_connection_app_service
+from app.port_management.interfaces.schemas.responses.port_connection_response import PortConnectionResponse
+from app.port_management.interfaces.schemas.responses.port_response import PortResponse
 from app.shared.infrastructure.persistence.session_generator import get_db
 
 # Create a router for the ports

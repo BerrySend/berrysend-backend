@@ -1,5 +1,5 @@
-﻿from app.route_planning.domain.models.port import Port
-from app.route_planning.interfaces.schemas.responses.port_response import PortResponse
+﻿from app.port_management.domain.models.port import Port
+from app.port_management.interfaces.schemas.responses.port_response import PortResponse
 
 
 def assemble_port_response_from_entity(port_entity: Port) -> PortResponse:

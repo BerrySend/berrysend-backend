@@ -28,9 +28,9 @@ async def create_tables():
     """
     try:
         # Import all models to ensure they are registered with BaseModelORM.metadata
-        from app.route_planning.infrastructure.models.port_model import PortModel
+        from app.port_management.infrastructure.models.port_model import PortModel
         from app.iam.infrastructure.models.user_model import UserModel
-        from app.route_planning.infrastructure.models.port_connection_model import PortConnectionModel
+        from app.port_management.infrastructure.models.port_connection_model import PortConnectionModel
 
         # Create a synchronous engine for table creation
         # (create_all works better with sync engines)

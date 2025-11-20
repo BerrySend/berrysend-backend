@@ -1,7 +1,7 @@
-﻿from app.route_planning.domain.algorithms.bellman_ford_algorithm import BellmanFordAlgorithm
-from app.route_planning.domain.models.port import Port
-from app.route_planning.domain.models.port_connection import PortConnection
-from app.route_planning.domain.services.engine.weight_calculation_service import WeightCalculationService
+﻿from app.route_optimization.domain.algorithms.bellman_ford_algorithm import BellmanFordAlgorithm
+from app.port_management.domain.models.port import Port
+from app.port_management.domain.models.port_connection import PortConnection
+from app.route_optimization.domain.services.engine import WeightCalculationService
 
 
 class BellmanFordAlgorithmService:

@@ -1,7 +1,7 @@
 ﻿from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.route_planning.domain.models.port import Port
-from app.route_planning.infrastructure.models.port_model import PortModel
+from app.port_management.domain.models.port import Port
+from app.port_management.infrastructure.models.port_model import PortModel
 from app.shared.infrastructure.repositories.base_repository import BaseRepository
 
 class PortRepository(BaseRepository[Port, PortModel]):

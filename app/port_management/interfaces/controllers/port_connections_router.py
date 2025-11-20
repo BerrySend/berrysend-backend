@@ -4,11 +4,11 @@ from fastapi import APIRouter, Depends, status, Path, Response
 from fastapi.openapi.models import Example
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.route_planning.application.port_connection_application_service import PortConnectionApplicationService
-from app.route_planning.domain.models.port_connection import PortConnection
-from app.route_planning.interfaces.assemblers.connection_response_from_entity_assembler import \
+from app.port_management.application.port_connection_application_service import PortConnectionApplicationService
+from app.port_management.domain.models.port_connection import PortConnection
+from app.port_management.interfaces.assemblers.connection_response_from_entity_assembler import \
     assemble_connection_response_from_entity
-from app.route_planning.interfaces.schemas.responses.port_connection_response import PortConnectionResponse
+from app.port_management.interfaces.schemas.responses.port_connection_response import PortConnectionResponse
 from app.shared.infrastructure.persistence.session_generator import get_db
 
 # Create a router for the port connections

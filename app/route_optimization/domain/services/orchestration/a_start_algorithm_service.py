@@ -1,6 +1,6 @@
-﻿from app.route_planning.domain.algorithms.a_star_algorithm import AStarAlgorithm
-from app.route_planning.domain.models.port import Port
-from app.route_planning.domain.models.port_connection import PortConnection
+﻿from app.route_optimization.domain.algorithms.a_star_algorithm import AStarAlgorithm
+from app.port_management.domain.models.port import Port
+from app.port_management.domain.models.port_connection import PortConnection
 
 
 class AStarAlgorithmService:

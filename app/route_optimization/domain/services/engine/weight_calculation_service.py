@@ -1,7 +1,7 @@
 ﻿"""
 Engine service for calculating a unique weight of a port connection by using its restrictions
 """
-from app.route_planning.domain.models.port_connection import PortConnection
+from app.port_management.domain.models.port_connection import PortConnection
 
 
 class WeightCalculationService:

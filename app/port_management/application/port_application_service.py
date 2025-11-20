@@ -3,9 +3,9 @@ Application service for ports.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.route_planning.domain.models.port import Port
-from app.route_planning.domain.services.support.port_service import PortService
-from app.route_planning.infrastructure.repositories.port_repository import PortRepository
+from app.port_management.domain.models.port import Port
+from app.port_management.domain.services.support.port_service import PortService
+from app.port_management.infrastructure.repositories.port_repository import PortRepository
 from app.shared.infrastructure.readers.csv_reader import read_csv_from_url
 
 class PortApplicationService:

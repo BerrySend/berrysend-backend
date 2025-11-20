@@ -1,7 +1,7 @@
 ﻿"""
 Service class for managing ports in the route planning domain.
 """
-from app.route_planning.domain.models.port import Port
+from app.port_management.domain.models.port import Port
 
 class PortService:
     def __init__(self):

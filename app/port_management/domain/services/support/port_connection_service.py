@@ -1,7 +1,7 @@
 """
 Service class for managing port connections in the route planning domain.
 """
-from app.route_planning.domain.models.port_connection import PortConnection
+from app.port_management.domain.models.port_connection import PortConnection
 
 class PortConnectionService:
     def __init__(self):
