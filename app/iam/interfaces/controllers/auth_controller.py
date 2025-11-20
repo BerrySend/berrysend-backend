@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.iam.application.user_application_service import UserApplicationService
-from app.iam.interfaces.resources.sign_in_request import SignInRequest
-from app.iam.interfaces.resources.sign_up_request import SignUpRequest
-from app.iam.interfaces.resources.authenticated_user_response import AuthenticatedUserResponse
-from app.iam.interfaces.resources.user_response import UserResponse
+from app.iam.interfaces.schemas.requests.sign_in_request import SignInRequest
+from app.iam.interfaces.schemas.requests.sign_up_request import SignUpRequest
+from app.iam.interfaces.schemas.responses.authenticated_user_response import AuthenticatedUserResponse
+from app.iam.interfaces.schemas.responses.user_response import UserResponse
 from app.shared.infrastructure.persistence.session_generator import get_db
 
 # Create router for authentication endpoints
