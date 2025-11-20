@@ -58,7 +58,7 @@ class BellmanFordAlgorithm:
         """
         self.edges[port1].append((port2, weight))
 
-    def apply_bellman_ford(self, origin, destination):
+    def apply_bellman_ford(self, origin: str, destination: str):
         """
         Calculates the shortest path from the origin to the destination using the
         Bellman-Ford algorithm. It also detects negative weight cycles in the graph.
