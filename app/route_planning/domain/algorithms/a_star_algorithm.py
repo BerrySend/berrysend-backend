@@ -24,7 +24,7 @@ class AStarAlgorithm:
         # Name -> [(neighbour, distance_km), ...]
         self.edges = {}
 
-    def add_port(self, port):
+    def add_port(self, port, port_name=None):
         """
         Adds a port to the collection of ports and its adjacency list.
 
@@ -32,23 +32,24 @@ class AStarAlgorithm:
         with its name. If the port is not already present in the adjacency list,
         it will also initialize an empty list for it in the `adj` adjacency list.
 
-        :param port: The port object to be added to the collection.
-        :type port: Port
+        :param port: The port to be added.
+        :param port_name: The name of the port. Defaults to the port's name.
         """
-        self.ports[port.name] = port
-        if port.name not in self.edges:
-            self.edges[port.name] = []
+        self.ports[port_name] = port
+        if port_name not in self.edges:
+            self.edges[port_name] = []
 
-    def add_connection(self, connection):
+    def add_connection(self, port1, port2, weight=0):
         """
         Adds a connection between two ports with a specified distance to the adjacency list.
 
-        :param connection: The connection object that contains information about the ports and
-            the distance between them.
-        :type connection: PortConnection
+        :param port1: The name of the first port.
+        :param port2: The name of the second port.
+        :param weight: The time taken to travel from port1 to port2. Defaults to 0.
+
         :return: None
         """
-        self.edges[connection.port1].append((connection.port2, connection.distance))
+        self.edges[port1].append((port2, weight))
 
     def heuristic(self, current_node, destination_node):
         """

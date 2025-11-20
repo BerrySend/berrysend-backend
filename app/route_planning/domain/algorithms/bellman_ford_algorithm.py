@@ -27,7 +27,7 @@ class BellmanFordAlgorithm:
         # Name -> [(neighbour, weight), ...]
         self.edges = []
 
-    def add_port(self, port):
+    def add_port(self, port, port_name=None):
         """
         Adds a port to the port dictionary and initializes its edges.
 
@@ -35,15 +35,14 @@ class BellmanFordAlgorithm:
         name as the key. Additionally, if the port's name is not already present in the
         `edges` dictionary, it will initialize an empty list for it.
 
-        :param port: An object representing the port to be added.
-        :type port: Any
-        :return: None
+        :param port: The port to be added.
+        :param port_name: The name of the port. Defaults to the port's name.
         """
-        self.ports[port.name] = port
-        if port.name not in self.edges:
-            self.edges[port.name] = []
+        self.ports[port_name] = port
+        if port_name not in self.edges:
+            self.edges[port_name] = []
 
-    def add_connection(self, connection):
+    def add_connection(self, port1, port2, weight=0):
         """
         Adds a connection between two ports with a specified distance.
 
@@ -51,12 +50,13 @@ class BellmanFordAlgorithm:
         from `connection.port1` to `connection.port2`, along with its
         corresponding weight.
 
-        :param connection: Object that contains attributes `port1`, `port2`,
-            and `weight`.
-        :type connection: object
+        :param port1: The name of the first port.
+        :param port2: The name of the second port.
+        :param weight: The distance between the two ports. Defaults to 0.
+
         :return: None
         """
-        self.edges[connection.port1].append((connection.port2, connection.distance))
+        self.edges[port1].append((port2, weight))
 
     def apply_bellman_ford(self, origin, destination):
         """

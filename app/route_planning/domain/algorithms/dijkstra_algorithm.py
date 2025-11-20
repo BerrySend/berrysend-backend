@@ -3,6 +3,7 @@ Dijkstra algorithm for optimizing time for travels in routes planning
 """
 import heapq
 
+
 class DijkstraAlgorithm:
     def __init__(self):
         """
@@ -22,30 +23,29 @@ class DijkstraAlgorithm:
         # Name -> [(neighbour, time_hours), ...]
         self.edges = {}
 
-    def add_port(self, port):
+    def add_port(self, port, port_name=None):
         """
         Adds a new port to the port collection and initializes its corresponding
         entry in the edge dictionary if it does not already exist.
 
         :param port: The port to be added.
-        :type port: Port
+        :param port_name: The name of the port. Defaults to the port's name.
         """
-        self.ports[port.name] = port
-        if port.name not in self.edges:
-            self.edges[port.name] = []
+        self.ports[port_name] = port
+        if port_name not in self.edges:
+            self.edges[port_name] = []
 
-    def add_connection(self, connection):
+    def add_connection(self, port1, port2, weight=0):
         """
         Adds a connection between two ports in the `edges` dictionary.
 
-        :param connection: The connection object to be added. The connection should have
-            attributes `port1`, `port2` indicating the ports to connect and `distance` as
-            the distance between them.
-        :type connection: PortConnection
+        :param port1: The name of the first port.
+        :param port2: The name of the second port.
+        :param weight: The time taken to travel from port1 to port2. Defaults to 0.
 
         :return: None
         """
-        self.edges[connection.port1].append((connection.port2, connection.distance))
+        self.edges[port1].append((port2, weight))
 
     def apply_dijkstra(self, origin, destination):
         """
