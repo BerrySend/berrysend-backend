@@ -1,15 +1,20 @@
-﻿class BellmanFordAlgorithm:
-    def __init__(self, vertices):
+﻿"""
+Bellman-Ford algorithm for general optimization in routes
+"""
+
+
+class BellmanFordAlgorithm:
+    def __init__(self, ports_number):
         """
         Class to represent a graph with vertices and edges for operations such as edge addition.
         Provides functionality to manage a graph's structure through its vertices and edges.
 
-        :param vertices: Number of vertices in the graph.
-        :type vertices: int
+        :param ports_number: Number of vertices in the graph.
+        :type ports_number: int
         """
 
-        # Total number of vertices in the graph
-        self.V = vertices
+        # Total number of ports in the graph
+        self.ports = ports_number
 
         # List of edges in the graph with format (u, v, weight)
         self.edges = []
@@ -53,12 +58,12 @@
 
         :raises Exception: If a negative weight cycle is detected
         """
-        dist = [float('inf')] * self.V
+        dist = [float('inf')] * self.ports
         dist[origin] = 0
-        predecessor = [None] * self.V
+        predecessor = [None] * self.ports
 
         # Iterate a maximum of V-1 times
-        for i in range(self.V - 1):
+        for i in range(self.ports - 1):
             change = False
             for u, v, w in self.edges:
                 if dist[u] + w < dist[v]:
@@ -72,7 +77,8 @@
 
             # If no change was made in this iteration, and the distance to the destination is still infinitive,
             # the algorithm will stop early
-            if dist[destination] != float('inf') and not any(dist[u] + w < dist[v] for u, v, w in self.edges if v == destination):
+            if dist[destination] != float('inf') and not any(
+                    dist[u] + w < dist[v] for u, v, w in self.edges if v == destination):
                 break
 
         # Detect negative weight cycles
