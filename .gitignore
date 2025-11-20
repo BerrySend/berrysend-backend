@@ -21,3 +21,8 @@ env/
 .idea/
 *.swp
 *.swo
+
+# .env files
+development.env
+production.env
+app/config.py

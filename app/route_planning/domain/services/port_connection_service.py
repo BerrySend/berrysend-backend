@@ -73,7 +73,6 @@ class PortConnectionService:
         distance_km: float = 0,
         time_hours: float = 0,
         cost_usd: float = 0,
-        route_type: str = "",
         is_restricted: bool = False
     ) -> "PortConnection":
         """
@@ -96,16 +95,12 @@ class PortConnectionService:
                 time_hours = float(time_hours)
             if cost_usd is not 0:
                 cost_usd = float(cost_usd)
-            if route_type is not "":
-                if route_type.strip() == "":
-                    raise ValueError("Input route type cannot be empty")
         except (ValueError, TypeError):
             raise ValueError("Invalid data format")
 
         port_connection.distance_km = distance_km
         port_connection.time_hours = time_hours
         port_connection.cost_usd = cost_usd
-        port_connection.route_type = route_type
         port_connection.is_restricted = is_restricted
 
         return port_connection

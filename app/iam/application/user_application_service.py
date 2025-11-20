@@ -95,7 +95,7 @@ class UserApplicationService:
         
         return user, token
 
-    async def get_user_by_id(self, user_id: int) -> User:
+    async def get_user_by_id(self, user_id: str) -> User:
         """
         Retrieve a user by their ID.
         
@@ -113,7 +113,7 @@ class UserApplicationService:
             raise ValueError("User not found")
         return user
 
-    async def change_password(self, user_id: int, old_password: str, new_password: str) -> None:
+    async def change_password(self, user_id: str, old_password: str, new_password: str) -> None:
         """
         Change the password of a user.
 
