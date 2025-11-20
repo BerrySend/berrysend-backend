@@ -13,9 +13,11 @@ class Port(BaseEntity):
         latitude (float): The latitude coordinate of the port.
         longitude (float): The longitude coordinate of the port.
         type (str): The type of the port (e.g., initial, intermediate, destination).
+        capacity (float): The capacity of the port, in tons.
     """
     name: str
     country: str
     latitude: float
     longitude: float
     type: str
+    capacity: float
