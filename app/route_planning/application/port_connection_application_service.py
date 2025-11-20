@@ -3,7 +3,7 @@ Application service for managing port connections in the route planning domain.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.route_planning.domain.services.port_connection_service import PortConnectionService
+from app.route_planning.domain.services.support.port_connection_service import PortConnectionService
 from app.route_planning.infrastructure.repositories.port_connection_repository import PortConnectionRepository
 from app.shared.infrastructure.readers.csv_reader import read_csv_from_url
 from app.route_planning.domain.models.port_connection import PortConnection
