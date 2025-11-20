@@ -27,6 +27,7 @@ class PortRepository(BaseRepository[Port, PortModel]):
             longitude=entity.longitude,
             country=entity.country,
             type=entity.type,
+            capacity=entity.capacity,
             updated_at=entity.updated_at,
             created_at=entity.created_at
         )
@@ -45,6 +46,7 @@ class PortRepository(BaseRepository[Port, PortModel]):
             longitude=model.longitude,
             country=model.country,
             type=model.type,
+            capacity=model.capacity,
             updated_at=model.updated_at,
             created_at=model.created_at
         )
