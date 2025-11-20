@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 # Import the db_instance from the main file instead of creating a new one
 def get_db_instance():
     """Lazy import to avoid circular dependencies"""
-    from main import db_instance
+    from app.main import db_instance
     return db_instance
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
