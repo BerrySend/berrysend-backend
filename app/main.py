@@ -4,20 +4,20 @@ Main initialization for the API
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from route_planning.application.port_application_service import PortApplicationService
-from route_planning.application.port_connection_application_service import PortConnectionApplicationService
+from port_management.application.port_application_service import PortApplicationService
+from port_management.application.port_connection_application_service import PortConnectionApplicationService
 
 from shared.infrastructure.persistence.database import Database, create_tables
 from config import settings
-from route_planning.interfaces.controllers.ports_router import router as ports_router
-from route_planning.interfaces.controllers.port_connections_router import router as connections_router
+from port_management.interfaces.controllers.ports_router import router as ports_router
+from port_management.interfaces.controllers.port_connections_router import router as connections_router
 from iam.interfaces.controllers.auth_controller import auth_router
 
 # Import all the ORM models here BEFORE creating tables
 # This ensures SQLAlchemy knows about all models when creating the schema
-from route_planning.infrastructure.models.port_model import PortModel
+from port_management.infrastructure.models.port_model import PortModel
 from iam.infrastructure.models.user_model import UserModel
-from route_planning.infrastructure.models.port_connection_model import PortConnectionModel
+from port_management.infrastructure.models.port_connection_model import PortConnectionModel
 
 # The database global instance
 db_instance = Database()

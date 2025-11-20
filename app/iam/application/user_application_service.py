@@ -5,7 +5,7 @@ from typing import Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.iam.domain.models.user import User
-from app.iam.domain.services.user_service import UserService
+from app.iam.domain.services.support.user_service import UserService
 from app.iam.infrastructure.hashing.hashing_service import HashingService
 from app.iam.infrastructure.repositories.user_repository import UserRepository
 from app.iam.infrastructure.tokens.token_service import TokenService

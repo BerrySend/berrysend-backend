@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import settings
 from app.shared.infrastructure.persistence.database import Base
 
-from app.route_planning.infrastructure.models.port_model import PortModel
+from app.port_management.infrastructure.models.port_model import PortModel
 from app.shared.infrastructure.models.base_model import BaseModelORM
 
 # this is the Alembic Config object, which provides
