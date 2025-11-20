@@ -45,7 +45,7 @@ class AStarAlgorithm:
 
         :param connection: The connection object that contains information about the ports and
             the distance between them.
-        :type connection: Connection
+        :type connection: PortConnection
         :return: None
         """
         self.edges[connection.port1].append((connection.port2, connection.distance))
@@ -65,14 +65,31 @@ class AStarAlgorithm:
             and `destination_node`.
         :rtype: float
         """
+        # Gets the current port
         p1 = self.ports[current_node]
+
+        # Gets the destination port
         p2 = self.ports[destination_node]
+
+        # Setting the aproximate Earth radius in km
         earth_radius = 6371  # km
+
+        # Calculating the distance using the Haversine formula
         phi1, phi2 = math.radians(p1.lat), math.radians(p2.lat)
+
+        # Finds the delta pi by subtracting the latitudes
         delta_phi = math.radians(p2.lat - p1.lat)
+
+        # Finds the delta lambda by subtracting the longitudes
         delta_lambda = math.radians(p2.lon - p1.lon)
+
+        # Calculates the Haversine formula
         a = math.sin(delta_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2
+
+        # Calculates the final distance
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+        # Returns the distance in km
         return earth_radius * c
 
     def apply_a_star(self, origin, destination):
@@ -94,30 +111,60 @@ class AStarAlgorithm:
             in the shortest path. If no path exists, it returns (infinity, empty list).
         :rtype: Tuple[float, List[Any]]
         """
+        # Initializes the open set as a priority queue for a list of candidate nodes to be visited
         open_set = []
-        heapq.heappush(open_set, (0, origin))
-        came_from = {} # Rebuild the route
 
+        # Pushes the origin node to the open set
+        heapq.heappush(open_set, (0, origin))
+
+        # Initializes the route for future rebuilding
+        came_from = {}
+
+        # A* Formula
+        # f(n) = g(n) + h(n)
+
+        # Initializes 'g(n)' as infinity for all nodes
         g_score = {n: float('inf') for n in self.ports}
+
+        # Initializes 'g(n)' as 0 for the origin
         g_score[origin] = 0
 
+        # Initializes 'f(n)' as infinity for all nodes
         f_score = {n: float('inf') for n in self.ports}
+
+        # Initializes 'f(n)' as g(n) + h(n) for the origin using the heuristic function
         f_score[origin] = self.heuristic(origin, destination)
 
+        # Starts the algorithm
         while open_set:
+            # Defines the current node as the one with the smallest f_score in the open set
             _, current = heapq.heappop(open_set)
+
+            # If the destination node is reached, the route will be rebuilt
             if current == destination:
                 # Rebuild the route
                 route = []
+
+                # Add the ports to the route in reverse order
                 while current in came_from:
                     route.append(current)
                     current = came_from[current]
+
+                # Adds the origin node to the route
                 route.append(origin)
+
+                # Reverse the route to get the correct order
                 route.reverse()
+
+                # Return the route and the distance
                 return g_score[destination], route
 
+            # Visit the neighbors
             for neighbour, weight in self.edges[current]:
+                # Calculate the tentative g_score for the neighbor
                 tentative_g_score = g_score[current] + weight
+
+                # If the tentative g_score is lower than the current g_score, update the g_score and the node we came from
                 if tentative_g_score < g_score[neighbour]:
                     came_from[neighbour] = current
                     g_score[neighbour] = tentative_g_score

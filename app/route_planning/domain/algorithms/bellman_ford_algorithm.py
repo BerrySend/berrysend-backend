@@ -4,40 +4,59 @@ Bellman-Ford algorithm for general optimization in routes
 
 
 class BellmanFordAlgorithm:
-    def __init__(self, ports_number):
+    def __init__(self):
         """
-        Class to represent a graph with vertices and edges for operations such as edge addition.
-        Provides functionality to manage a graph's structure through its vertices and edges.
+        Represents a graph structure maintaining ports and edges.
 
-        :param ports_number: Number of vertices in the graph.
-        :type ports_number: int
+        The class provides data structures to store ports and their associated
+        edges. Ports are represented as a dictionary where the key is the port
+        name, and edges are stored as a list of tuples consisting of a neighbor
+        and a corresponding weight.
+
+        Attributes
+            ports : dict
+                Dictionary mapping port names as keys to associated port objects or
+                placeholders.
+            edges : list
+                List of edges represented as tuples, where each tuple contains a
+                neighbor and a weight.
         """
+        # Name -> Port
+        self.ports = {}
 
-        # Total number of ports in the graph
-        self.ports = ports_number
-
-        # List of edges in the graph with format (u, v, weight)
+        # Name -> [(neighbour, weight), ...]
         self.edges = []
 
-    def add_edge(self, u, v, weight):
+    def add_port(self, port):
         """
-        Adds an edge between two nodes in the graph with a specified weight.
+        Adds a port to the port dictionary and initializes its edges.
 
-        This function allows adding directed or undirected edges by
-        specifying the originating node, the target node, and the weight
-        of the connection. These edges are stored in an internal list
-        as tuples for further processing within the graph structure.
+        This method will add a given port to the `ports` dictionary using the port's
+        name as the key. Additionally, if the port's name is not already present in the
+        `edges` dictionary, it will initialize an empty list for it.
 
-        :param u: The originating node of the edge.
-        :type u: Any
-        :param v: The destination node of the edge.
-        :type v: Any
-        :param weight: The weight or cost associated with the edge.
-        :type weight: float
-
+        :param port: An object representing the port to be added.
+        :type port: Any
         :return: None
         """
-        self.edges.append((u, v, weight))
+        self.ports[port.name] = port
+        if port.name not in self.edges:
+            self.edges[port.name] = []
+
+    def add_connection(self, connection):
+        """
+        Adds a connection between two ports with a specified distance.
+
+        This method updates the internal structure to include a new connection
+        from `connection.port1` to `connection.port2`, along with its
+        corresponding weight.
+
+        :param connection: Object that contains attributes `port1`, `port2`,
+            and `weight`.
+        :type connection: object
+        :return: None
+        """
+        self.edges[connection.port1].append((connection.port2, connection.distance))
 
     def apply_bellman_ford(self, origin, destination):
         """
@@ -58,40 +77,57 @@ class BellmanFordAlgorithm:
 
         :raises Exception: If a negative weight cycle is detected
         """
-        dist = [float('inf')] * self.ports
+        # Initializes the distance from the origin to each node as a positive infinity value
+        dist = {n: float('inf') for n in self.ports}
+
+        # Sets the distance from the origin to itself to 0
         dist[origin] = 0
-        predecessor = [None] * self.ports
 
-        # Iterate a maximum of V-1 times
-        for i in range(self.ports - 1):
-            change = False
-            for u, v, w in self.edges:
-                if dist[u] + w < dist[v]:
+        # Initializes the node we came from to reconstruct the path later
+        came_from = {}
+
+        for _ in range(len(self.ports) - 1):
+            # Sets a flag to indicate if any change was made during the iteration
+            updated = False
+
+            # For each edge in the graph
+            for conn in self.edges:
+                # Defines the variables for the current edge
+                u, v, w = conn.port1, conn.port2, conn.weight
+
+                # If the distance from the current node to the neighbor is lower than the
+                # current distance, update the distance and the node we came from
+                if dist[u] != float('inf') and dist[u] + w < dist[v]:
                     dist[v] = dist[u] + w
-                    predecessor[v] = u
-                    change = True
+                    came_from[v] = u
+                    updated = True
 
-            # If no change was made in this iteration, stop the algorithm
-            if not change:
+            # If no change was made during the iteration, the algorithm is finished
+            if not updated:
                 break
 
-            # If no change was made in this iteration, and the distance to the destination is still infinitive,
-            # the algorithm will stop early
-            if dist[destination] != float('inf') and not any(
-                    dist[u] + w < dist[v] for u, v, w in self.edges if v == destination):
-                break
-
-        # Detect negative weight cycles
-        for u, v, w in self.edges:
-            if dist[u] + w < dist[v]:
+        # Check for negative weight cycles
+        for conn in self.edges:
+            u, v, w = conn.port1, conn.port2, conn.weight
+            if dist[u] != float('inf') and dist[u] + w < dist[v]:
                 raise Exception("WARNING: Negative weight cycle detected!")
 
-        # Build the path
-        path = []
-        node = destination
-        while node is not None:
-            path.append(node)
-            node = predecessor[node]
-        path.reverse()
+        # If the destination is unreachable, return infinity and an empty route list
+        if dist[destination] == float('inf'):
+            return float('inf'), []
 
-        return dist[destination], path
+        # Build the route from origin to destination
+        route = []
+
+        node = destination
+        while node in came_from:
+            route.append(node)
+            node = came_from[node]
+
+        # Adds the origin to the route
+        route.append(origin)
+
+        # Reverse the route to get the correct order
+        route.reverse()
+
+        return dist[destination], route
