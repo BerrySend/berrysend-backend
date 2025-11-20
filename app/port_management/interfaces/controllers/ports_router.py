@@ -48,10 +48,12 @@ async def get_port_by_id(
         )],
         response: Response,
         port_app_service: PortApplicationService = Depends(get_port_app_service),
+        connections_app_service: PortConnectionApplicationService = Depends(get_connection_app_service)
 ) -> Any:
     """
     Endpoint to retrieve a port by its id.
 
+    :param connections_app_service: Injected port connection application service.
     :param response: To set the status code.
     :param port_id: The id of the port.
     :param port_app_service: Injected port application service.
@@ -63,7 +65,10 @@ async def get_port_by_id(
             response.status_code = status.HTTP_404_NOT_FOUND
             return {"error": "Port for given id not found"}
 
-        response = assemble_port_response_from_entity(port)
+        connections = await connections_app_service.get_connections_by_port_id(port_id)
+        connections_number = len(connections)
+
+        response = assemble_port_response_from_entity(port, connections_number)
         return response
     except ValueError as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
