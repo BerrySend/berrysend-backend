@@ -9,7 +9,9 @@ class PortConnectionModel(BaseModelORM):
 
     Attributes:
         port_a_id (str): The id of the port a
+        port_a_name (str): The name of the port a
         port_b_id (str): The id of the port b
+        port_b_name (str): The name of the port b
         distance_km (str): The distance km from the port "a" to the port "b"
         time_hours (str): The time hours that the port "a" to the port "b"
         cost_usd (str): The cost of the port "a" to the port "b"
@@ -19,7 +21,9 @@ class PortConnectionModel(BaseModelORM):
     __tablename__ = "port_connections"
 
     port_a_id: Mapped[str] = Column(String(36), nullable=False)
+    port_a_name: Mapped[str] = Column(String(255), nullable=False)
     port_b_id: Mapped[str] = Column(String(36), nullable=False)
+    port_b_name: Mapped[str] = Column(String(255), nullable=False)
     distance_km: Mapped[float] = Column(Float, nullable=False)
     time_hours: Mapped[float] = Column(Float, nullable=False)
     cost_usd: Mapped[float] = Column(Float, nullable=False)
