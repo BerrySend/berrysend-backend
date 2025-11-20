@@ -72,6 +72,7 @@ class PortApplicationService:
         """
         Updates the port information.
 
+        :param port_capacity: The new capacity of the port.
         :param port_id: The id of the port to update.
         :param name: The new name of the port.
         :param port_type: The new type of the port.
@@ -117,7 +118,11 @@ class PortApplicationService:
             if port_id is None or port_id.strip() == "":
                 raise ValueError("To get a port, you must provide a valid port id.")
 
-            port: Port = await self.port_repository.get_by_id(port_id)
+            port = await self.port_repository.get_by_id(port_id)
+
+            if port is None:
+                raise ValueError("Port not found.")
+            
             return port
         except ValueError as e:
             raise ValueError(f"Error trying to retrieve port: {e}")
