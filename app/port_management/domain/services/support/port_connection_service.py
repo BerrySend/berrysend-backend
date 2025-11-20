@@ -89,11 +89,11 @@ class PortConnectionService:
         :raises ValueError: If the values entered are invalid
         """
         try:
-            if distance_km is not 0:
+            if distance_km != 0:
                 distance_km = float(distance_km)
-            if time_hours is not 0:
+            if time_hours != 0:
                 time_hours = float(time_hours)
-            if cost_usd is not 0:
+            if cost_usd != 0:
                 cost_usd = float(cost_usd)
         except (ValueError, TypeError):
             raise ValueError("Invalid data format")

@@ -70,7 +70,7 @@ async def get_port_by_id(
         return {"error": str(e)}
 
 
-@router.get("/", response_model=list[PortResponse], status_code=status.HTTP_200_OK)
+@router.get("", response_model=list[PortResponse], status_code=status.HTTP_200_OK)
 async def get_all_ports(
         response: Response,
         port_app_service: PortApplicationService = Depends(get_port_app_service),
