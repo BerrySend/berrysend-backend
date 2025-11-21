@@ -93,7 +93,7 @@ class AStarAlgorithm:
         # Returns the distance in km
         return earth_radius * c
 
-    def apply_a_star(self, origin, destination):
+    def apply_a_star(self, origin, destination) -> tuple[float, list[str]]:
         """
         Calculates the shortest path from a starting point to a destination using the
         A* pathfinding algorithm. It uses a priority queue to determine the next

@@ -66,14 +66,14 @@ class BellmanFordAlgorithm:
         as a list of nodes.
 
         :param origin: Starting vertex for the shortest path calculation
-        :type origin: int
+        :type origin: str
 
         :param destination: Target vertex for the shortest path calculation
-        :type destination: int
+        :type destination: str
 
         :return: A tuple containing the shortest distance to the destination
             and a list representing the path to reach it
-        :rtype: tuple[float, list[int]]
+        :rtype: tuple[float, list[str]]
 
         :raises Exception: If a negative weight cycle is detected
         """

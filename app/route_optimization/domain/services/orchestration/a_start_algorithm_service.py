@@ -36,9 +36,10 @@ class AStarAlgorithmService:
             self.algorithm.add_port(port, port.name)
 
         for conn in connections:
-            self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.distance_km)
+            if not conn.is_restricted:
+                self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.distance_km)
 
-    def compute_algorithm(self, start_port_name: str, end_port_name: str) -> list[str]:
+    def compute_algorithm(self, start_port_name: str, end_port_name: str) -> tuple[float, list[str]]:
         """
         Computes and returns the shortest path between two ports using the A* algorithm.
 

@@ -47,7 +47,7 @@ class DijkstraAlgorithm:
         """
         self.edges[port1].append((port2, weight))
 
-    def apply_dijkstra(self, origin, destination):
+    def apply_dijkstra(self, origin, destination) -> tuple[float, list[str]]:
         """
         Applies Dijkstra's algorithm to find the shortest path between the given origin and
         destination in a graph.

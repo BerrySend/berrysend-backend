@@ -41,10 +41,11 @@ class BellmanFordAlgorithmService:
             self.algorithm.add_port(port, port.name)
 
         for conn in connections:
-            final_weight = self.weight_calculation_service.calculate(conn)
-            self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, final_weight)
+            if not conn.is_restricted:
+                final_weight = self.weight_calculation_service.calculate(conn)
+                self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, final_weight)
 
-    def compute_algorithm(self, start_port_name: str, end_port_name: str):
+    def compute_algorithm(self, start_port_name: str, end_port_name: str) -> tuple[float, list[str]]:
         """
         Compute the shortest path between two ports using the Bellman-Ford algorithm.
         This method leverages the algorithm module to determine the optimal route
@@ -55,6 +56,6 @@ class BellmanFordAlgorithmService:
         :param end_port_name: Name of the destination port
         :type end_port_name: str
         :return: Result of the Bellman-Ford algorithm application, representing the computed path
-        :rtype: tuple[float, list[int]]
+        :rtype: tuple[float, list[str]]
         """
         return self.algorithm.apply_bellman_ford(start_port_name, end_port_name)
