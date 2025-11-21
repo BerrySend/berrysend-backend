@@ -10,6 +10,8 @@ class OptimizedRouteResponse(BaseModel):
     route. It is primarily used to summarize and return the results of an
     optimization or planning process for a given route.
 
+    :ivar id: The unique identifier for the optimized route.
+    :type id: str
     :ivar visited_ports: The list of ports visited in the order they were
         traveled.
     :type visited_ports: list[str]
@@ -20,6 +22,7 @@ class OptimizedRouteResponse(BaseModel):
     :ivar total_cost: The total cost of traveling the optimized route.
     :type total_cost: float
     """
+    id: str = Field(title="The unique identifier for the optimized route.")
     visited_ports: list[str] = Field(title="The list of visited ports.")
     total_distance: float = Field(title="The total distance of the route.")
     total_time: float = Field(title="The total time required to travel the route.")
