@@ -41,6 +41,9 @@ class Export(BaseEntity):
     :ivar optimized_route_id: Identifier for the optimized route or transportation pathway used
         for the export.
     :type optimized_route_id: str
+
+    :ivar user_id: Identifier for the user who initiated the export.
+    :type user_id: str
     """
     comercial_description: str
     transportation_mode: str
@@ -50,3 +53,4 @@ class Export(BaseEntity):
     unit: str
     quantity: float
     optimized_route_id: str
+    user_id: str

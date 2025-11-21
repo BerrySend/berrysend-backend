@@ -40,6 +40,8 @@ class ExportModel(BaseModelORM):
     unit: Mapped[str] = Column(String(255), nullable=False)
     quantity: Mapped[float] = Column(Float, nullable=False)
     optimized_route_id: Mapped[str] = Column(String(255), ForeignKey("optimal_routes.id"))
+    user_id: Mapped[str] = Column(String(255), ForeignKey("users.id"))
 
     # Relationships
     optimized_route = relationship("OptimizedRoute", foreign_keys=[optimized_route_id])
+    user = relationship("User", foreign_keys=[user_id])
