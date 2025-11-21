@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Float, Boolean
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from app.shared.infrastructure.models.base_model import BaseModelORM
 
@@ -29,3 +29,7 @@ class PortConnectionModel(BaseModelORM):
     cost_usd: Mapped[float] = Column(Float, nullable=False)
     route_type: Mapped[str] = Column(String(255), nullable=False)
     is_restricted: Mapped[bool] = Column(Boolean, nullable=False)
+
+    # Relationships
+    origin_port = relationship("Port", foreign_keys=[port_a_id])
+    destination_port = relationship("Port", foreign_keys=[port_b_id])
