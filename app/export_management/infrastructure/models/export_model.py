@@ -35,7 +35,7 @@ class ExportModel(BaseModelORM):
     comercial_description: Mapped[str] = Column(String(255), nullable=False)
     transportation_mode: Mapped[str] = Column(String(255), nullable=False)
     us_fob: Mapped[float] = Column(Float, nullable=False)
-    gross_weigh: Mapped[float] = Column(Float, nullable=False)
+    gross_weight: Mapped[float] = Column(Float, nullable=False)
     net_weight: Mapped[float] = Column(Float, nullable=False)
     unit: Mapped[str] = Column(String(255), nullable=False)
     quantity: Mapped[float] = Column(Float, nullable=False)

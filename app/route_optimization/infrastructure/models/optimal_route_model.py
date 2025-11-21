@@ -37,6 +37,7 @@ class OptimalRouteModel(BaseModelORM):
     origin_port_name: Mapped[str] = Column(String(255), nullable=False)
     destination_port_id: Mapped[str] = Column(String(255), ForeignKey("ports.id"))
     destination_port_name: Mapped[str] = Column(String(255), nullable=False)
+    algorithm_used: Mapped[str] = Column(String(255), nullable=False)
     route_mode: Mapped[str] = Column(String(255), nullable=False)
     total_distance: Mapped[float] = Column(Float, nullable=False)
     total_time: Mapped[float] = Column(Float, nullable=False)
