@@ -39,7 +39,7 @@ class AStarAlgorithmService:
             if not conn.is_restricted:
                 self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.distance_km)
 
-    def compute_algorithm(self, start_port_name: str, end_port_name: str) -> tuple[float, list[str]]:
+    def compute_algorithm(self, start_port_name: str, end_port_name: str, export_weight: float) -> tuple[float, list[str]]:
         """
         Computes and returns the shortest path between two ports using the A* algorithm.
 
@@ -48,6 +48,8 @@ class AStarAlgorithmService:
         ports. The result is a list of strings representing the nodes (ports) in the
         calculated path.
 
+        :param export_weight: The weight of product to export.
+        :type export_weight: float
         :param start_port_name: The name of the starting port (node).
         :type start_port_name: str
         :param end_port_name: The name of the destination port (node).
@@ -55,4 +57,4 @@ class AStarAlgorithmService:
         :return: A list of port names representing the shortest path from start to end.
         :rtype: list[str]
         """
-        return self.algorithm.apply_a_star(start_port_name, end_port_name)
+        return self.algorithm.apply_a_star(start_port_name, end_port_name, export_weight)

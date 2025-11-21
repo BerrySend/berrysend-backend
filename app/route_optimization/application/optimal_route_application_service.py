@@ -29,11 +29,13 @@ class OptimalRouteApplicationService:
         self.ports_repository = PortRepository(db)
         self.connections_repository = PortConnectionRepository(db)
 
-    async def build_optimal_route_with_a_star(self, start_port_name: str, end_port_name: str, mode: str):
+    async def build_optimal_route_with_a_star(self, start_port_name: str, end_port_name: str, mode: str, export_weight: float):
         """
         Builds an optimal route between two ports using the A* algorithm, based on the specified mode
         (maritime or air). It calculates the shortest path considering distance, time, and cost.
 
+        :param export_weight: The weight of the product to export.
+        :type export_weight: float
         :param start_port_name: The name of the starting port.
         :type start_port_name: str
         :param end_port_name: The name of the destination port.
@@ -62,7 +64,7 @@ class OptimalRouteApplicationService:
         try:
             a_star_service = AStarAlgorithmService()
             a_star_service.build_graph(ports, connections)
-            total_distance, optimal_route = a_star_service.compute_algorithm(start_port_name, end_port_name)
+            total_distance, optimal_route = a_star_service.compute_algorithm(start_port_name, end_port_name, export_weight)
         except Exception as e:
             raise Exception(f"Error trying to compute optimal route: {e}.")
 

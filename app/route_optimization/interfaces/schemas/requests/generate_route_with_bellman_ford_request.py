@@ -18,6 +18,8 @@ class GenerateRouteWithBellmanFordRequest(BaseModel):
     :type destination: str
     :ivar mode: The mode of transportation for the route (e.g., maritime, air).
     :type mode: str
+    :ivar export_weight: The weight of the route to export.
+    :type export_weight: float
     :ivar algorithm_name: The name of the routing algorithm to plan the route.
     :type algorithm_name: str
     :ivar parameters: The parameters for the route generation.
@@ -26,5 +28,6 @@ class GenerateRouteWithBellmanFordRequest(BaseModel):
     source: str = Field(title="The starting port for the route.")
     destination: str = Field(title="The destination port for the route.")
     mode: str = Field(title="The mode of transportation for the route (e.g., maritime, air).")
+    export_weight: float = Field(title="The weight of the route to export.")
     algorithm_name: str = Field(title="The name of the routing algorithm to plan the route.")
     parameters: ParametersRequest = Field(title="The parameters for the route generation.")

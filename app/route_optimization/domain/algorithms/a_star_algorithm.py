@@ -93,13 +93,16 @@ class AStarAlgorithm:
         # Returns the distance in km
         return earth_radius * c
 
-    def apply_a_star(self, origin, destination) -> tuple[float, list[str]]:
+    def apply_a_star(self, origin, destination, export_weight) -> tuple[float, list[str]]:
         """
         Calculates the shortest path from a starting point to a destination using the
         A* pathfinding algorithm. It uses a priority queue to determine the next
         node to explore based on the f_score, which combines the cost of the path
         from the origin to a given node (g_score) and a heuristic estimate of the
         remaining distance to the destination.
+
+        :param export_weight: The weight of product to export
+        :type export_weight: float
 
         :param origin: The starting node for the A* search
         :type origin: Any
@@ -162,6 +165,11 @@ class AStarAlgorithm:
 
             # Visit the neighbors
             for neighbour, weight in self.edges[current]:
+
+                # Check if the neighbor port has enough capacity for the export weight
+                if self.ports[neighbour].capacity < export_weight:
+                    continue
+
                 # Calculate the tentative g_score for the neighbor
                 tentative_g_score = g_score[current] + weight
 

@@ -13,6 +13,8 @@ class GenerateRouteRequest(BaseModel):
     :type source: str
     :ivar destination: The ending point/location for the route.
     :type destination: str
+    :ivar export_weight: The weight of the route to export.
+    :type export_weight: float
     :ivar mode: The transportation mode to use for the route (e.g., maritime or air)
     :type mode: str
     :ivar algorithm_name: The name of the routing algorithm to plan the route
@@ -21,5 +23,6 @@ class GenerateRouteRequest(BaseModel):
     """
     source: str = Field(title="The starting port for the route.")
     destination: str = Field(title="The ending port for the route.")
+    export_weight: float = Field(title="The weight of the route to export.")
     mode: str = Field(title="The transportation mode for the route (e.g., maritime or air).")
     algorithm_name: str = Field(title="The name of the routing algorithm to plan the route (only can be A* or Dijkstra).")
