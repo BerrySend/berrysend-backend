@@ -3,12 +3,15 @@
 from app.export_management.domain.models.export import Export
 from app.export_management.domain.services.support.export_service import ExportService
 from app.export_management.infrastructure.repositories.export_repository import ExportRepository
+from app.route_optimization.domain.models.optimal_route import OptimalRoute
+from app.route_optimization.infrastructure.repositories.optimal_route_repository import OptimalRouteRepository
 
 
 class ExportApplicationService:
     def __init__(self, db: AsyncSession):
         self.export_service = ExportService()
         self.export_repository = ExportRepository(db)
+        self.route_repository = OptimalRouteRepository(db)
 
     async def register_export(self,
                               comercial_description: str,
@@ -140,3 +143,41 @@ class ExportApplicationService:
             raise ValueError(f"Error trying to retrieve exports: {e}")
 
         return exports
+
+    async def get_route_by_export_id(self, export_id: str) -> "OptimalRoute | None":
+        """
+        Retrieve an optimal route based on the provided export ID.
+
+        This asynchronous method interacts with the export repository and route
+        repository to fetch the optimal route associated with a given export ID. If the
+        export ID is invalid, or if the associated export or route cannot be found, it
+        raises an appropriate error. Returns the optimal route if found, otherwise
+        None. The method is primarily designed to work within an environment where
+        both export and route data are available for retrieval.
+
+        :param export_id: The ID of the export whose associated optimal route is
+            to be retrieved.
+        :type export_id: str
+        :return: The optimal route associated with the provided export ID, or None if
+            no such route exists.
+        :rtype: OptimalRoute | None
+        :raises ValueError: If the export ID is invalid, or if the export or associated
+            route cannot be found.
+        """
+        try:
+            if export_id is None or export_id.strip() == "":
+                raise ValueError("To retrieve a route, you must provide a valid export id.")
+
+            export = await self.export_repository.get_by_id(export_id)
+
+            if not export:
+                raise ValueError("Export not found.")
+
+            route = await self.route_repository.get_by_id(export.optimized_route_id)
+
+            if not route:
+                raise ValueError("Route not found.")
+        except ValueError as e:
+            raise ValueError(f"Error trying to retrieve route: {e}")
+
+        return route
