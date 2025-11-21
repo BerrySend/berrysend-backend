@@ -84,6 +84,24 @@ class OptimalRouteApplicationService:
             total_time += conn.time_hours
             total_cost += conn.cost_usd
 
+        origin_port = await self.ports_repository.get_port_by_name(start_port_name)
+        destination_port = await self.ports_repository.get_port_by_name(end_port_name)
+
+        optimal_route_obj = self.optimal_route_service.register_optimal_route(
+            origin_port_id=origin_port.id,
+            origin_port_name=origin_port.name,
+            destination_port_id=destination_port.id,
+            destination_port_name=destination_port.name,
+            route_mode=mode,
+            algorithm_used="AStar",
+            total_cost=total_cost,
+            total_distance=total_distance,
+            total_time=total_time,
+            visited_ports=optimal_route
+        )
+
+        await self.optimal_route_repository.create(optimal_route_obj)
+
         return optimal_route, total_distance, total_time, total_cost
 
     async def build_optimal_route_with_bellman_ford(self, start_port_name: str, end_port_name: str, cost_m: float,
@@ -149,6 +167,24 @@ class OptimalRouteApplicationService:
 
         except Exception as e:
             raise Exception(f"Error trying to compute optimal route: {e}.")
+
+        origin_port = await self.ports_repository.get_port_by_name(start_port_name)
+        destination_port = await self.ports_repository.get_port_by_name(end_port_name)
+
+        optimal_route_obj = self.optimal_route_service.register_optimal_route(
+            origin_port_id=origin_port.id,
+            origin_port_name=origin_port.name,
+            destination_port_id=destination_port.id,
+            destination_port_name=destination_port.name,
+            route_mode=mode,
+            algorithm_used="Bellman-Ford",
+            total_cost=total_cost,
+            total_distance=total_distance,
+            total_time=total_time,
+            visited_ports=optimal_route
+        )
+
+        await self.optimal_route_repository.create(optimal_route_obj)
 
         return optimal_route, total_distance, total_time, total_cost
 
