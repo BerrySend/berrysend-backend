@@ -47,7 +47,7 @@ class DijkstraAlgorithm:
         """
         self.edges[port1].append((port2, weight))
 
-    def apply_dijkstra(self, origin, destination) -> tuple[float, list[str]]:
+    def apply_dijkstra(self, origin, destination, export_weight: float) -> tuple[float, list[str]]:
         """
         Applies Dijkstra's algorithm to find the shortest path between the given origin and
         destination in a graph.
@@ -55,6 +55,9 @@ class DijkstraAlgorithm:
         This method calculates the shortest distance and the corresponding path from the
         origin node to the destination node using a priority queue (min-heap). The graph is
         represented with weighted edges that are stored as adjacency lists.
+
+        :param export_weight: The weight of product to export.
+        :type export_weight: float
 
         :param origin: The starting node of the path.
         :type origin: str
@@ -67,6 +70,13 @@ class DijkstraAlgorithm:
             empty path list.
         :rtype: tuple[float, list[str]]
         """
+        # If the origin or destination ports have insufficient capacity, return infinity and an empty route list
+        if self.ports[origin].capacity < export_weight:
+            return float('inf'), []
+
+        if self.ports[destination].capacity < export_weight:
+            return float('inf'), []
+
         # Min-heap of (total_distance, port_name)
         heap = [(0, origin)]
 
@@ -109,6 +119,10 @@ class DijkstraAlgorithm:
 
             # Visit the neighbor ports
             for neighbour, weight_time in self.edges[port]:
+                # If the neighbor port has insufficient capacity, skip it
+                if self.ports[neighbour].capacity < export_weight:
+                    continue
+
                 # Calculate the new distance to the neighbor port
                 new_distance = current_distance + weight_time
 

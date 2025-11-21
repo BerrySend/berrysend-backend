@@ -191,7 +191,7 @@ class OptimalRouteApplicationService:
 
         return optimal_route, total_distance, total_time, total_cost
 
-    async def build_optimal_route_with_dijkstra(self, start_port_name: str, end_port_name: str, mode: str):
+    async def build_optimal_route_with_dijkstra(self, start_port_name: str, end_port_name: str, mode: str, export_weight: float):
         """
         Builds the optimal route using the Dijkstra algorithm for a given start and end port
         based on the selected transportation mode.
@@ -201,6 +201,7 @@ class OptimalRouteApplicationService:
         includes information about total time, cost, and distance. The processed route is
         then registered and stored in the repository.
 
+        :param export_weight: The weight of the product to export.
         :param start_port_name: Name of the starting port.
         :param end_port_name: Name of the destination port.
         :param mode: Transportation mode, either "maritime" or "air".
@@ -227,7 +228,7 @@ class OptimalRouteApplicationService:
         try:
             dijkstra_service = DijkstraAlgorithmService()
             dijkstra_service.build_graph(ports, connections)
-            total_time, optimal_route = dijkstra_service.compute_algorithm(start_port_name, end_port_name)
+            total_time, optimal_route = dijkstra_service.compute_algorithm(start_port_name, end_port_name, export_weight)
         except Exception as e:
             raise Exception(f"Error trying to compute optimal route: {e}.")
 

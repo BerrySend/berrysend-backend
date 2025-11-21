@@ -33,14 +33,15 @@ class DijkstraAlgorithmService:
         for conn in connections:
             self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.time_hours)
 
-    def compute_algorithm(self, origin_port_name: str, destination_port_name: str) -> tuple[float, list[str]]:
+    def compute_algorithm(self, origin_port_name: str, destination_port_name: str, export_weight: float) -> tuple[float, list[str]]:
         """
         Computes the shortest path using Dijkstra's algorithm between the given
         origin and destination ports.
 
+        :param export_weight: The weight of product to export as a float value.
         :param origin_port_name: The name of the origin port as a string.
         :param destination_port_name: The name of the destination port as a string.
 
         :return: A tuple containing the shortest distance and the corresponding path.
         """
-        return self.algorithm.apply_dijkstra(origin_port_name, destination_port_name)
+        return self.algorithm.apply_dijkstra(origin_port_name, destination_port_name, export_weight)
