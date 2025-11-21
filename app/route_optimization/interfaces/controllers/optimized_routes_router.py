@@ -8,6 +8,7 @@ from app.route_optimization.application.optimal_route_application_service import
 from app.route_optimization.domain.models.optimal_route import OptimalRoute
 from app.route_optimization.interfaces.assemblers.optimized_route_response_from_entity_assembler import \
     assemble_optimized_route_response_from_entity
+from app.route_optimization.interfaces.schemas.requests.generate_route_request import GenerateRouteRequest
 from app.route_optimization.interfaces.schemas.responses.optimized_route_response import OptimizedRouteResponse
 from app.shared.infrastructure.persistence.session_generator import get_db
 
@@ -67,6 +68,46 @@ async def get_route_by_id(
 
         response = assemble_optimized_route_response_from_entity(route)
         return response
+    except ValueError as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"error": str(e)}
+
+
+@router.post("/compute", response_model=OptimizedRouteResponse, status_code=status.HTTP_201_CREATED)
+async def compute_optimal_route(
+        request: GenerateRouteRequest,
+        response: Response,
+        route_app_service: OptimalRouteApplicationService = Depends(get_optimized_route_app_service)
+) -> Any:
+    """
+    Compute the optimal route based on the provided request parameters.
+
+    This function takes a request containing parameters for route optimization,
+    processes it using the application service, and returns the computed optimal route.
+    If any errors occur during processing, an appropriate error response is returned.
+
+    :param request: The request object containing parameters for route optimization.
+    :param response: The Response object, used to set the response status code.
+    :param route_app_service: The application service for computing the optimal route.
+    :return: Upon success, returns a dictionary representation of the computed optimal route.
+             On failure, returns an error dictionary with a corresponding status code.
+    """
+    try:
+        optimal_route = await route_app_service.build_optimal_route(
+            request.source,
+            request.destination,
+            request.mode,
+            request.export_weight,
+            request.algorithm_name,
+            request.parameters.cost_multiplier if request.parameters else None,
+            request.parameters.distance_multiplier if request.parameters else None,
+            request.parameters.time_multiplier if request.parameters else None
+        )
+        if not optimal_route:
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            raise ValueError("Computing of optimal route failed.")
+
+        return assemble_optimized_route_response_from_entity(optimal_route)
     except ValueError as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"error": str(e)}

@@ -160,7 +160,7 @@ class OptimalRouteApplicationService:
         # ---------------------------------------------------------
         # (7) Return
         # ---------------------------------------------------------
-        return optimal_route, total_distance, total_time, total_cost
+        return optimal_route_obj
 
     async def get_optimal_route_by_id(self, optimal_route_id: str) -> "OptimalRoute | None":
         """

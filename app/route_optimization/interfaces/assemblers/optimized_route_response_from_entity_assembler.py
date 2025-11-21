@@ -17,6 +17,10 @@ def assemble_optimized_route_response_from_entity(optimized_route_entity: Optima
     """
     return OptimizedRouteResponse(
         id=optimized_route_entity.id,
+        origin_port_name=optimized_route_entity.origin_port_name,
+        destination_port_name=optimized_route_entity.destination_port_name,
+        route_mode=optimized_route_entity.route_mode,
+        algorithm_used=optimized_route_entity.algorithm_used,
         visited_ports=optimized_route_entity.visited_ports,
         total_distance=optimized_route_entity.total_distance,
         total_time=optimized_route_entity.total_time,

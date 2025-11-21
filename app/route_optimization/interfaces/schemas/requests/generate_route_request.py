@@ -1,8 +1,9 @@
 ﻿from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator, field_validator
 
 from app.route_optimization.interfaces.schemas.requests.parameters_request import ParametersRequest
+from app.route_optimization.interfaces.utils.algorithm_names import ALGORITHM_ALIASES
 
 
 class GenerateRouteRequest(BaseModel):
@@ -36,3 +37,25 @@ class GenerateRouteRequest(BaseModel):
         default=None,
         title="Optional parameters for algorithms that require additional inputs (e.g., Bellman-Ford)."
     )
+
+    @field_validator("algorithm_name", mode="before")
+    @classmethod
+    def normalize_algorithm_name(cls, v):
+        """
+        This method is a field validator designed to normalize the value of the
+        `algorithm_name` field before it is assigned. It ensures that the input
+        value is standardized and checks against predefined aliases. If the
+        normalized name corresponds to an alias, it returns the standardized
+        name. If no match is found, a ValueError is raised to indicate an
+        invalid algorithm name.
+
+        :param v: The value of the algorithm name to be validated and normalized.
+        :type v: str
+        :return: The normalized algorithm name if it matches an alias.
+        :rtype: str
+        :raises ValueError: If the name does not match any defined aliases.
+        """
+        key = str(v).lower().replace("-", "").replace(" ", "")
+        if key in ALGORITHM_ALIASES:
+            return ALGORITHM_ALIASES[key]
+        raise ValueError(f"Invalid algorithm name: {v}")
