@@ -115,6 +115,13 @@ class AStarAlgorithm:
             in the shortest path. If no path exists, it returns (infinity, empty list).
         :rtype: Tuple[float, List[Any]]
         """
+        # If the origin or destination ports have insufficient capacity, return infinity and an empty route list
+        if self.ports[origin].capacity < export_weight:
+            return float('inf'), []
+
+        if self.ports[destination].capacity < export_weight:
+            return float('inf'), []
+
         # Initializes the open set as a priority queue for a list of candidate nodes to be visited
         open_set = []
 

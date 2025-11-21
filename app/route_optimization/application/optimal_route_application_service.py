@@ -107,7 +107,7 @@ class OptimalRouteApplicationService:
         return optimal_route, total_distance, total_time, total_cost
 
     async def build_optimal_route_with_bellman_ford(self, start_port_name: str, end_port_name: str, cost_m: float,
-                                                    distance_m: float, time_m: float, mode: str):
+                                                    distance_m: float, time_m: float, mode: str, export_weight: float):
         """
         Builds the optimal route between two ports using the Bellman-Ford algorithm.
 
@@ -118,6 +118,7 @@ class OptimalRouteApplicationService:
         weight. The method also aggregates the total distance, time, and cost of the
         calculated optimal route.
 
+        :param export_weight: The weight of the product to export.
         :param mode: The transportation mode, either "maritime" or "air".
         :param start_port_name: The name of the starting port.
         :param end_port_name: The name of the destination port.
@@ -144,7 +145,7 @@ class OptimalRouteApplicationService:
         try:
             bellman_ford_service = BellmanFordAlgorithmService(cost_m, distance_m, time_m)
             bellman_ford_service.build_graph(ports, connections)
-            total_weight, optimal_route = bellman_ford_service.compute_algorithm(start_port_name, end_port_name)
+            total_weight, optimal_route = bellman_ford_service.compute_algorithm(start_port_name, end_port_name, export_weight)
 
             connections_list = []
 
