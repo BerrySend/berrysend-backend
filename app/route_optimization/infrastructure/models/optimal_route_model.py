@@ -1,5 +1,5 @@
-﻿from sqlalchemy import Column, String, Float, JSON
-from sqlalchemy.orm import Mapped
+﻿from sqlalchemy import Column, String, Float, JSON, ForeignKey
+from sqlalchemy.orm import Mapped, relationship
 
 from app.shared.infrastructure.models.base_model import BaseModelORM
 
@@ -33,12 +33,17 @@ class OptimalRouteModel(BaseModelORM):
     """
     __tablename__ = "optimal_routes"
 
-    origin_port_id: Mapped[str] = Column(String(255), nullable=False)
+    origin_port_id: Mapped[str] = Column(String(255), ForeignKey("ports.id"))
     origin_port_name: Mapped[str] = Column(String(255), nullable=False)
-    destination_port_id: Mapped[str] = Column(String(255), nullable=False)
+    destination_port_id: Mapped[str] = Column(String(255), ForeignKey("ports.id"))
     destination_port_name: Mapped[str] = Column(String(255), nullable=False)
+    algorithm_used: Mapped[str] = Column(String(255), nullable=False)
     route_mode: Mapped[str] = Column(String(255), nullable=False)
     total_distance: Mapped[float] = Column(Float, nullable=False)
     total_time: Mapped[float] = Column(Float, nullable=False)
     total_cost: Mapped[float] = Column(Float, nullable=False)
     visited_ports = Column(JSON, nullable=False)
+
+    # Relationships
+    origin_port = relationship("Port", foreign_keys=[origin_port_id])
+    destination_port = relationship("Port", foreign_keys=[destination_port_id])

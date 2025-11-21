@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, Float, Boolean
-from sqlalchemy.orm import Mapped
+from sqlalchemy import Column, String, Float, Boolean, ForeignKey
+from sqlalchemy.orm import Mapped, relationship
 
 from app.shared.infrastructure.models.base_model import BaseModelORM
 
@@ -20,12 +20,16 @@ class PortConnectionModel(BaseModelORM):
     """
     __tablename__ = "port_connections"
 
-    port_a_id: Mapped[str] = Column(String(36), nullable=False)
+    port_a_id: Mapped[str] = Column(String(36), ForeignKey("ports.id"))
     port_a_name: Mapped[str] = Column(String(255), nullable=False)
-    port_b_id: Mapped[str] = Column(String(36), nullable=False)
+    port_b_id: Mapped[str] = Column(String(36), ForeignKey("ports.id"))
     port_b_name: Mapped[str] = Column(String(255), nullable=False)
     distance_km: Mapped[float] = Column(Float, nullable=False)
     time_hours: Mapped[float] = Column(Float, nullable=False)
     cost_usd: Mapped[float] = Column(Float, nullable=False)
     route_type: Mapped[str] = Column(String(255), nullable=False)
     is_restricted: Mapped[bool] = Column(Boolean, nullable=False)
+
+    # Relationships
+    port_a = relationship("Port", foreign_keys=[port_a_id])
+    port_b = relationship("Port", foreign_keys=[port_b_id])

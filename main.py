@@ -15,6 +15,7 @@ from app.port_management.interfaces.controllers.ports_router import router as po
 from app.port_management.interfaces.controllers.port_connections_router import router as connections_router
 from app.iam.interfaces.controllers.auth_controller import auth_router
 from app.route_optimization.interfaces.controllers.optimized_routes_router import router as routes_router
+from app.export_management.interfaces.controllers.exports_router import router as exports_router
 
 # Import all the ORM models here BEFORE creating tables
 # This ensures SQLAlchemy knows about all models when creating the schema
@@ -105,3 +106,4 @@ app.include_router(auth_router)
 app.include_router(ports_router)
 app.include_router(connections_router)
 app.include_router(routes_router)
+app.include_router(exports_router)
