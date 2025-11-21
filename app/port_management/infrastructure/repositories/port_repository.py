@@ -1,4 +1,5 @@
-﻿from sqlalchemy.ext.asyncio import AsyncSession
+﻿from sqlalchemy import Result, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.port_management.domain.models.port import Port
 from app.port_management.infrastructure.models.port_model import PortModel
@@ -50,3 +51,19 @@ class PortRepository(BaseRepository[Port, PortModel]):
             updated_at=model.updated_at,
             created_at=model.created_at
         )
+
+    async def get_port_by_name(self, name: str):
+        """
+        Retrieve a port by its name.
+
+        :param name: The name of the port to retrieve.
+        :return: The port entity if found, otherwise None.
+        """
+
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.name == name)
+        )
+        if result:
+            model = result.scalars().first()
+            return self.to_entity(model)
+        return None

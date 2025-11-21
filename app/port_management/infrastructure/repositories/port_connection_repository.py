@@ -69,3 +69,23 @@ class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionMode
         )
         model = result.scalars().all()
         return [self.to_entity(m) for m in model]
+
+    async def get_connection_by_origin_and_destination_name(self, origin_name: str, destination_name: str) -> "PortConnection | None":
+        """
+        Retrieve a port connection by its origin and destination port names.
+
+        :param origin_name: The name of the origin port.
+        :param destination_name: The name of the destination port.
+
+        :return: The port connection entity if found, otherwise None.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(
+                (self._model.port_a_name == origin_name) &
+                (self._model.port_b_name == destination_name)
+            )
+        )
+        model = result.scalars().first()
+        if model:
+            return self.to_entity(model)
+        return None
