@@ -19,7 +19,8 @@ class ExportService:
                         net_weight: float,
                         unit: str,
                         quantity: float,
-                        port_id: str
+                        route_id: str,
+                        user_id: str
     ) -> "Export":
         """
         Registers a new export item with detailed validation of input parameters for ensuring
@@ -42,8 +43,11 @@ class ExportService:
         :type unit: str
         :param quantity: Total quantity of items being exported.
         :type quantity: float
-        :param port_id: ID corresponding to the optimized route or port for the export.
-        :type port_id: str
+        :param route_id: ID corresponding to the optimized route or port for the export.
+        :type route_id: str
+        :param user_id: ID of the user who initiated the export.
+        :type user_id: str
+
         :return: An instance of Export holding the provided and validated data.
         :rtype: Export
         :raises ValueError: Raised if any parameter fails validation, such as empty strings,
@@ -60,8 +64,10 @@ class ExportService:
                 raise ValueError("Mode cannot be empty")
             if unit.strip() == "":
                 raise ValueError("Unit cannot be empty")
-            if port_id.strip() == "":
+            if route_id.strip() == "":
                 raise ValueError("Port ID cannot be empty")
+            if user_id.strip() == "":
+                raise ValueError("User ID cannot be empty")
             if us_fob < 0:
                 raise ValueError("US FOB must be greater than 0")
             if gross_weight < 0:
@@ -81,7 +87,8 @@ class ExportService:
             net_weight=net_weight,
             unit=unit,
             quantity=quantity,
-            optimized_route_id=port_id
+            optimized_route_id=route_id,
+            user_id=user_id
         )
 
     @staticmethod
