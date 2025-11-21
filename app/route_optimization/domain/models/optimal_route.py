@@ -13,6 +13,7 @@ class OptimalRoute(BaseEntity):
         destination_port_id (str): The id of the destination port.
         destination_port_name (str): The name of the destination port.
         route_mode (str): The mode of the route (e.g., maritime or aerial).
+        algorithm_used (str): The algorithm used for the route planning.
         total_cost (float): The cost of the route.
         total_distance (float): The distance of the route.
         total_time (float): The time of the route.
@@ -23,6 +24,7 @@ class OptimalRoute(BaseEntity):
     destination_port_id: str
     destination_port_name: str
     route_mode: str
+    algorithm_used: str
     total_cost: float
     total_distance: float
     total_time: float

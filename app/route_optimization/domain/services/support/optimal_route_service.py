@@ -15,6 +15,7 @@ class OptimalRouteService:
             destination_port_id: str,
             destination_port_name: str,
             route_mode: str,
+            algorithm_used: str,
             total_cost: float,
             total_distance: float,
             total_time: float,
@@ -26,6 +27,8 @@ class OptimalRouteService:
         to be greater than zero. Raises an exception if any input is invalid or if an error occurs
         during the registration process.
 
+        :param algorithm_used: The algorithm used to calculate the optimal route
+        :type algorithm_used: str
         :param origin_port_id: ID of the origin port
         :type origin_port_id: str
         :param origin_port_name: Name of the origin port
@@ -62,6 +65,8 @@ class OptimalRouteService:
                 raise ValueError("Destination port name cannot be empty")
             if route_mode.strip() == "":
                 raise ValueError("Route mode cannot be empty")
+            if algorithm_used.strip() == "":
+                raise ValueError("Algorithm used cannot be empty")
             if total_cost <= 0:
                 raise ValueError("Total cost must be greater than 0")
             if total_distance <= 0:
@@ -80,6 +85,7 @@ class OptimalRouteService:
             destination_port_id=destination_port_id,
             destination_port_name=destination_port_name,
             route_mode=route_mode,
+            algorithm_used=algorithm_used,
             total_cost=total_cost,
             total_distance=total_distance,
             total_time=total_time,
