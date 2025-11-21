@@ -12,8 +12,9 @@ class PortModel(BaseModelORM):
         country (str): the country where the port is located
         latitude (float): the latitude coordinate of the port
         longitude (float): the longitude coordinate of the port
-        type (str): the type of the port (e.g., initial, intermediate, destination)
+        in_graph_type (str): the type of the port (e.g., initial, intermediate, destination)
         capacity (float): the capacity of the port, in tons
+        port_type (str): the type of the port (e.g., maritime or air)
     """
     __tablename__ = "ports"
 
@@ -21,5 +22,6 @@ class PortModel(BaseModelORM):
     country: Mapped[str] = Column(String(255), nullable=False)
     latitude: Mapped[float] = Column(Float, nullable=False)
     longitude: Mapped[float] = Column(Float, nullable=False)
-    type: Mapped[str] = Column(String(255), nullable=False)
+    in_graph_type: Mapped[str] = Column(String(255), nullable=False)
     capacity: Mapped[float] = Column(Float, nullable=False)
+    port_type: Mapped[str] = Column(String(255), nullable=False)

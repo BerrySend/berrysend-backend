@@ -24,7 +24,7 @@ class BellmanFordAlgorithm:
         # Name -> Port
         self.ports = {}
 
-        # Name -> [(neighbour, weight), ...]
+        # list of (u, v, weight)
         self.edges = []
 
     def add_port(self, port, port_name=None):
@@ -56,27 +56,37 @@ class BellmanFordAlgorithm:
 
         :return: None
         """
-        self.edges[port1].append((port2, weight))
+        self.edges.append((port1, port2, weight))
 
-    def apply_bellman_ford(self, origin: str, destination: str):
+    def apply_bellman_ford(self, origin: str, destination: str, export_weight: float) -> tuple[float, list[str]]:
         """
         Calculates the shortest path from the origin to the destination using the
         Bellman-Ford algorithm. It also detects negative weight cycles in the graph.
         The method computes both the shortest distance and the corresponding path
         as a list of nodes.
 
+        :param export_weight: The weight of product to export.
+        :type export_weight: float
+
         :param origin: Starting vertex for the shortest path calculation
-        :type origin: int
+        :type origin: str
 
         :param destination: Target vertex for the shortest path calculation
-        :type destination: int
+        :type destination: str
 
         :return: A tuple containing the shortest distance to the destination
             and a list representing the path to reach it
-        :rtype: tuple[float, list[int]]
+        :rtype: tuple[float, list[str]]
 
         :raises Exception: If a negative weight cycle is detected
         """
+        # If the origin or destination ports have insufficient capacity, return infinity and an empty route list
+        if self.ports[origin].capacity < export_weight:
+            return float('inf'), []
+
+        if self.ports[destination].capacity < export_weight:
+            return float('inf'), []
+
         # Initializes the distance from the origin to each node as a positive infinity value
         dist = {n: float('inf') for n in self.ports}
 
@@ -91,9 +101,11 @@ class BellmanFordAlgorithm:
             updated = False
 
             # For each edge in the graph
-            for conn in self.edges:
-                # Defines the variables for the current edge
-                u, v, w = conn.port1, conn.port2, conn.weight
+            for u, v, w in self.edges:
+
+                # If the neighbor port has not enough capacity for the export weight, skip it
+                if self.ports[v].capacity < export_weight:
+                    continue
 
                 # If the distance from the current node to the neighbor is lower than the
                 # current distance, update the distance and the node we came from
@@ -107,8 +119,10 @@ class BellmanFordAlgorithm:
                 break
 
         # Check for negative weight cycles
-        for conn in self.edges:
-            u, v, w = conn.port1, conn.port2, conn.weight
+        for u, v, w in self.edges:
+            if self.ports[v].capacity < export_weight:
+                continue
+
             if dist[u] != float('inf') and dist[u] + w < dist[v]:
                 raise Exception("WARNING: Negative weight cycle detected!")
 
