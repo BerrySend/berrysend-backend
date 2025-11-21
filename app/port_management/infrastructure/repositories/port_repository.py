@@ -27,8 +27,9 @@ class PortRepository(BaseRepository[Port, PortModel]):
             latitude=entity.latitude,
             longitude=entity.longitude,
             country=entity.country,
-            type=entity.type,
+            in_graph_type=entity.in_graph_type,
             capacity=entity.capacity,
+            port_type=entity.port_type,
             updated_at=entity.updated_at,
             created_at=entity.created_at
         )
@@ -46,11 +47,52 @@ class PortRepository(BaseRepository[Port, PortModel]):
             latitude=model.latitude,
             longitude=model.longitude,
             country=model.country,
-            type=model.type,
+            in_graph_type=model.in_graph_type,
             capacity=model.capacity,
+            port_type=model.port_type,
             updated_at=model.updated_at,
             created_at=model.created_at
         )
+
+    async def get_all_maritime_ports(self):
+        """
+        Retrieve all maritime ports.
+
+        :return: A list of maritime port entities.
+        """
+        maritime_result: Result = await self._db.execute(
+            select(self._model).where(self._model.port_type == 'maritime')
+        )
+        both_result: Result = await self._db.execute(
+            select(self._model).where(self._model.port_type == 'both')
+        )
+
+        both_models = both_result.scalars().all()
+        maritime_models = maritime_result.scalars().all()
+
+        result_models = [self.to_entity(model) for model in both_models] + [self.to_entity(model) for model in maritime_models]
+
+        return result_models
+
+    async def get_all_air_ports(self):
+        """
+        Retrieve all airports.
+
+        :return: A list of airport entities.
+        """
+        air_result: Result = await self._db.execute(
+            select(self._model).where(self._model.port_type == 'air')
+        )
+        both_result: Result = await self._db.execute(
+            select(self._model).where(self._model.port_type == 'both')
+        )
+
+        both_models = both_result.scalars().all()
+        air_models = air_result.scalars().all()
+
+        result_models = [self.to_entity(model) for model in both_models] + [self.to_entity(model) for model in air_models]
+
+        return result_models
 
     async def get_port_by_name(self, name: str):
         """

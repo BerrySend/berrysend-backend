@@ -11,16 +11,17 @@ class PortService:
         pass
 
     @staticmethod
-    def create_port(name: str, country: str, port_type: str, latitude: float, longitude: float, capacity: float) -> "Port":
+    def create_port(name: str, country: str, in_graph_type: str, latitude: float, longitude: float, capacity: float, port_type: str) -> "Port":
         """
         Creates a new port.
 
         :param name: The name of the port.
         :param country: The country where the port is located.
-        :param port_type: The type of the port (e.g., initial, intermediate, destination).
+        :param in_graph_type: The type of the port (e.g., initial, intermediate, destination).
         :param latitude: The latitude coordinate of the port.
         :param longitude: The longitude coordinate of the port.
         :param capacity: The capacity of the port, in tons.
+        :param port_type: The type of the port (e.g., maritime, air, both).
 
         :return: A newly created instance of Port.
 
@@ -40,10 +41,14 @@ class PortService:
                 raise ValueError("Country cannot be empty")
             if port_type.strip() == "":
                 raise ValueError("Port type cannot be empty")
+            if capacity <= 0:
+                raise ValueError("Capacity must be greater than 0")
+            if in_graph_type.strip() == "":
+                raise ValueError("In-graph type cannot be empty")
         except (ValueError, TypeError):
             raise ValueError("Invalid data format.")
 
-        return Port(name=name, country=country, latitude=latitude, longitude=longitude, type=port_type, capacity=capacity)
+        return Port(name=name, country=country, latitude=latitude, longitude=longitude, in_graph_type=in_graph_type, capacity=capacity, port_type=port_type)
 
     @staticmethod
     def update_port_info(port: Port, name: str="", port_type: str="", capacity: float =0) -> "Port":

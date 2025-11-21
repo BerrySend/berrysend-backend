@@ -70,6 +70,30 @@ class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionMode
         model = result.scalars().all()
         return [self.to_entity(m) for m in model]
 
+    async def get_all_maritime_connections(self) -> list["PortConnection"]:
+        """
+        Retrieve all maritime port connections.
+
+        :return: A list of maritime port connections.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.route_type == "maritime")
+        )
+        model = result.scalars().all()
+        return [self.to_entity(m) for m in model]
+
+    async def get_all_air_connections(self) -> list["PortConnection"]:
+        """
+        Retrieve all airport connections.
+
+        :return: A list of airport connections.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.route_type == "air")
+        )
+        model = result.scalars().all()
+        return [self.to_entity(m) for m in model]
+
     async def get_connection_by_origin_and_destination_name(self, origin_name: str, destination_name: str) -> "PortConnection | None":
         """
         Retrieve a port connection by its origin and destination port names.

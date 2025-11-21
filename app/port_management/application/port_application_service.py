@@ -46,18 +46,20 @@ class PortApplicationService:
             try:
                 name: str = row["name"].strip()
                 country: str = row["country"].strip()
-                port_type: str = row["type"].strip()
+                in_graph_type: str = row["in_graph_type"].strip()
                 latitude: float = float(row["latitude"])
                 longitude: float = float(row["longitude"])
                 capacity: float = float(row["capacity"])
+                port_type: str = row["port_type"].strip()
 
                 port = self.port_service.create_port(
                     name=name,
                     country=country,
-                    port_type=port_type,
+                    in_graph_type=in_graph_type,
                     latitude=latitude,
                     longitude=longitude,
-                    capacity=capacity
+                    capacity=capacity,
+                    port_type=port_type
                 )
 
                 await self.port_repository.create(port)
@@ -122,7 +124,27 @@ class PortApplicationService:
 
             if port is None:
                 raise ValueError("Port not found.")
-            
+
+            return port
+        except ValueError as e:
+            raise ValueError(f"Error trying to retrieve port: {e}")
+
+    async def get_port_by_name(self, port_name: str) -> "Port | None":
+        """
+        Retrieves a port by its name
+
+        :param port_name: The name of the port.
+        :return:  with the given name, if found, otherwise None.
+        """
+        try:
+            if port_name is None or port_name.strip() == "":
+                raise ValueError("To get a port, you must provide a valid port name.")
+
+            port = await self.port_repository.get_port_by_name(port_name)
+
+            if port is None:
+                raise ValueError("Port not found.")
+
             return port
         except ValueError as e:
             raise ValueError(f"Error trying to retrieve port: {e}")
