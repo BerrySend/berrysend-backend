@@ -2,7 +2,7 @@
 from app.export_management.interfaces.schemas.responses.export_response import ExportResponse
 
 
-def assembler_export_response_from_entity(entity: Export) -> "ExportResponse":
+def assemble_export_response_from_entity(entity: Export) -> "ExportResponse":
     """
     Transforms an Export entity into an ExportResponse object.
 
