@@ -1,0 +1,1024 @@
+@startuml BerrySend - Class Diagram
+
+skinparam monochrome true
+
+title BerrySend Backend
+
+' ============================================
+' SHARED
+' ============================================
+package "BerrySend.Shared.Domain" {
+  package "Model" {
+    abstract class BaseEntity <<Entity>> {
+      +id: str
+      +created_at: datetime
+      +updated_at: datetime
+    }
+  }
+
+  package "Repositories" {
+    interface IBaseRepository {
+      +create(entity): entity
+      +update(entity): entity
+      +delete(id): bool
+      +get_by_id(id): entity
+      +get_all(): list
+    }
+  }
+}
+
+' ============================================
+' IAM BOUNDED CONTEXT
+' ============================================
+package "BerrySend.IAM.Domain" {
+  package "Model" {
+    package "Aggregates" {
+      class User {
+        +id: str
+        +full_name: str
+        +email: str
+        +hashed_password: str
+        +created_at: datetime
+        +updated_at: datetime
+        --
+        +update_password(new_hashed_password): void
+      }
+    }
+
+    package "Commands" {
+      class SignUpCommand <<record>> {
+        +full_name: str
+        +email: str
+        +password: str
+        +confirm_password: str
+      }
+
+      class SignInCommand <<record>> {
+        +email: str
+        +password: str
+      }
+    }
+  }
+
+  package "Services" {
+    interface IUserCommandService {
+      --
+      +sign_up(command): User
+      +sign_in(command): tuple[User, str]
+    }
+
+    interface IUserQueryService {
+      --
+      +get_user_by_id(user_id): User
+      +get_user_by_email(email): User
+    }
+  }
+
+  package "Repositories" {
+    interface IUserRepository {
+      +find_by_email(email): User
+      +exists_by_email(email): bool
+    }
+  }
+
+  User --|> BaseEntity
+
+  IUserCommandService "1" ..> "N" SignUpCommand : uses
+  IUserCommandService "1" ..> "N" SignInCommand : uses
+
+  IUserRepository "1" ..> "N" User : manages
+  IUserRepository "1" ..> "1" IBaseRepository : extends
+}
+
+' ============================================
+' PORT MANAGEMENT BOUNDED CONTEXT
+' ============================================
+package "BerrySend.PortManagement.Domain" {
+  package "Model" {
+    package "Aggregates" {
+      class Port {
+        +id: str
+        +name: str
+        +country: str
+        +latitude: float
+        +longitude: float
+        +in_graph_type: str
+        +capacity: float
+        +port_type: str
+        +created_at: datetime
+        +updated_at: datetime
+      }
+
+      class PortConnection {
+        +id: str
+        +port_a_id: str
+        +port_a_name: str
+        +port_b_id: str
+        +port_b_name: str
+        +distance_km: float
+        +time_hours: float
+        +cost_usd: float
+        +route_type: str
+        +is_restricted: bool
+        +created_at: datetime
+        +updated_at: datetime
+      }
+    }
+
+    package "ValueObjects" {
+      class Coordinates <<record>> {
+        +latitude: float
+        +longitude: float
+      }
+
+      enum EPortType {
+        Maritime
+        Air
+        Both
+      }
+
+      enum EGraphType {
+        Initial
+        Intermediate
+        Destination
+      }
+    }
+
+    package "Commands" {
+      class CreatePortCommand <<record>> {}
+      class CreateConnectionCommand <<record>> {}
+    }
+
+    package "Queries" {
+      class GetPortByIdQuery <<record>> {}
+      class GetAllPortsQuery <<record>> {}
+    }
+  }
+
+  package "Services" {
+    interface IPortCommandService {
+      --
+      +create_port(command): Port
+      +update_port(port_id, name, type, capacity): Port
+    }
+
+    interface IPortQueryService {
+      --
+      +get_port_by_id(port_id): Port
+      +get_all_ports(): list[Port]
+    }
+
+    interface IPortConnectionCommandService {
+      --
+      +create_connection(command): PortConnection
+      +update_connection(connection_id, params): PortConnection
+    }
+
+    interface IPortConnectionQueryService {
+      --
+      +get_connections_by_port_id(port_id): list[PortConnection]
+      +get_all_connections(): list[PortConnection]
+    }
+  }
+
+  package "Repositories" {
+    interface IPortRepository {
+      +get_port_by_name(name): Port
+    }
+
+    interface IPortConnectionRepository {
+      +get_connections_by_port_id(port_id): list[PortConnection]
+      +get_all_maritime_connections(): list[PortConnection]
+      +get_all_air_connections(): list[PortConnection]
+    }
+  }
+
+  Port --|> BaseEntity
+  PortConnection --|> BaseEntity
+
+  Port "1" --> "1" EPortType : has
+  Port "1" --> "1" EGraphType : has
+  Port "1" --> "1" Coordinates : has
+
+  PortConnection "1" --> "1" Port : origin (port_a)
+  PortConnection "1" --> "1" Port : destination (port_b)
+
+  IPortCommandService "1" ..> "N" CreatePortCommand : uses
+  IPortQueryService "1" ..> "N" GetPortByIdQuery : uses
+
+  IPortConnectionCommandService "1" ..> "N" CreateConnectionCommand : uses
+
+  IPortRepository "1" ..> "N" Port : manages
+  IPortRepository "1" ..> "1" IBaseRepository : extends
+
+  IPortConnectionRepository "1" ..> "N" PortConnection : manages
+  IPortConnectionRepository "1" ..> "1" IBaseRepository : extends
+}
+
+' ============================================
+' ROUTE OPTIMIZATION BOUNDED CONTEXT
+' ============================================
+package "BerrySend.RouteOptimization.Domain" {
+  package "Model" {
+    package "Aggregates" {
+      class OptimalRoute {
+        +id: str
+        +origin_port_id: str
+        +origin_port_name: str
+        +destination_port_id: str
+        +destination_port_name: str
+        +route_mode: str
+        +algorithm_used: str
+        +total_cost: float
+        +total_distance: float
+        +total_time: float
+        +visited_ports: list[str]
+        +created_at: datetime
+        +updated_at: datetime
+      }
+    }
+
+    package "ValueObjects" {
+      class RouteConstraints <<record>> {
+        +max_distance: float
+        +max_time: float
+        +max_cost: float
+        +avoid_ports: list[str]
+        +weight_time: float
+        +weight_cost: float
+        +weight_distance: float
+      }
+
+      enum ERouteMode {
+        Maritime
+        Air
+        Multimodal
+      }
+
+      enum EAlgorithm {
+        BellmanFord
+        Dijkstra
+        AStar
+      }
+    }
+
+    package "Algorithms" {
+      interface IRouteAlgorithm {
+        --
+        +find_optimal_route(graph, origin, dest, constraints): OptimalRoute
+      }
+
+      class BellmanFordAlgorithm {
+        --
+        +find_optimal_route(graph, origin, dest, constraints): OptimalRoute
+        -calculate_weight(time, cost, distance, constraints): float
+        -detect_negative_cycles(graph): bool
+      }
+    }
+
+    package "Commands" {
+      class CalculateRouteCommand <<record>> {
+        +origin_port_id: str
+        +destination_port_id: str
+        +route_mode: str
+        +constraints: RouteConstraints
+      }
+    }
+
+    package "Queries" {
+      class GetOptimalRouteQuery <<record>> {}
+    }
+  }
+
+  package "Services" {
+    interface IOptimalRouteCommandService {
+      --
+      +calculate_route(command): OptimalRoute
+    }
+
+    interface IOptimalRouteQueryService {
+      --
+      +get_route_by_id(route_id): OptimalRoute
+      +get_all_routes(): list[OptimalRoute]
+    }
+  }
+
+  package "Repositories" {
+    interface IOptimalRouteRepository {
+      +get_routes_by_origin(origin_id): list[OptimalRoute]
+      +get_routes_by_destination(dest_id): list[OptimalRoute]
+    }
+  }
+
+  OptimalRoute --|> BaseEntity
+
+  OptimalRoute "1" --> "1" ERouteMode : has
+  OptimalRoute "1" --> "1" EAlgorithm : uses
+
+  BellmanFordAlgorithm ..|> IRouteAlgorithm : implements
+
+  IOptimalRouteCommandService "1" ..> "N" CalculateRouteCommand : uses
+  IOptimalRouteCommandService "1" --> "1" IRouteAlgorithm : uses
+
+  IOptimalRouteQueryService "1" ..> "N" GetOptimalRouteQuery : uses
+
+  CalculateRouteCommand "1" --> "1" RouteConstraints : contains
+
+  IOptimalRouteRepository "1" ..> "N" OptimalRoute : manages
+  IOptimalRouteRepository "1" ..> "1" IBaseRepository : extends
+}
+
+' ============================================
+' EXPORT MANAGEMENT BOUNDED CONTEXT
+' ============================================
+package "BerrySend.ExportManagement.Domain" {
+  package "Model" {
+    package "Aggregates" {
+      class Export {
+        +id: str
+        +comercial_description: str
+        +transportation_mode: str
+        +us_fob: float
+        +gross_weight: float
+        +net_weight: float
+        +unit: str
+        +quantity: float
+        +optimized_route_id: str
+        +user_id: str
+        +created_at: datetime
+        +updated_at: datetime
+      }
+    }
+
+    package "ValueObjects" {
+      enum ETransportationMode {
+        Maritime
+        Air
+        Road
+        Multimodal
+      }
+
+      enum EProductUnit {
+        Kilograms
+        Tons
+        Pieces
+        Boxes
+      }
+    }
+
+    package "Commands" {
+      class CreateExportCommand <<record>> {
+        +comercial_description: str
+        +transportation_mode: str
+        +us_fob: float
+        +gross_weight: float
+        +net_weight: float
+        +unit: str
+        +quantity: float
+        +optimized_route_id: str
+        +user_id: str
+      }
+
+      class AssignRouteToExportCommand <<record>> {
+        +export_id: str
+        +route_id: str
+      }
+    }
+
+    package "Queries" {
+      class GetExportByIdQuery <<record>> {}
+      class GetExportsByPortQuery <<record>> {}
+      class GetExportsByDateRangeQuery <<record>> {}
+    }
+  }
+
+  package "Services" {
+    interface IExportCommandService {
+      --
+      +create_export(command): Export
+      +update_export(command): Export
+    }
+
+    interface IExportQueryService {
+      --
+      +get_export_by_id(export_id): Export
+      +get_exports_by_initial_port(port_id): list[Export]
+      +get_exports_by_final_port(port_id): list[Export]
+      +get_exports_by_date_range(start, end): list[Export]
+      +get_exports_by_port_and_date(port_id, start, end): list[Export]
+    }
+  }
+
+  package "Repositories" {
+    interface IExportRepository {
+      +get_by_route_id(route_id): list[Export]
+      +get_by_port_and_date_range(port_id, start, end): list[Export]
+    }
+  }
+
+  Export --|> BaseEntity
+
+  Export "1" --> "1" EProductUnit : has
+  Export "1" --> "1" ETransportationMode : has
+  Export "1" --> "1" OptimalRoute : references
+  Export "1" --> "1" User : created_by
+
+  IExportCommandService "1" ..> "N" CreateExportCommand : uses
+  IExportCommandService "1" ..> "N" AssignRouteToExportCommand : uses
+
+  IExportQueryService "1" ..> "N" GetExportByIdQuery : uses
+  IExportQueryService "1" ..> "N" GetExportsByPortQuery : uses
+
+
+
+  IExportRepository "1" ..> "N" Export : manages
+  IExportRepository "1" ..> "1" IBaseRepository : extends
+}
+
+' ============================================
+' CROSS-BOUNDED CONTEXT RELATIONSHIPS
+' ============================================
+OptimalRoute "1" --> "1" Port : origin_port
+OptimalRoute "1" --> "1" Port : destination_port
+
+IOptimalRouteCommandService ..> IPortRepository : uses
+IOptimalRouteCommandService ..> IPortConnectionRepository : uses
+
+IExportCommandService ..> IOptimalRouteCommandService : uses
+IExportCommandService ..> IPortRepository : uses
+
+@enduml
+package "IAM Bounded Context" <<Frame>> {
+
+    package "Domain Layer" <<Rectangle>> {
+        class User <<Entity>> ENTITY_COLOR {
+            - full_name: str
+            - email: str
+            - hashed_password: str
+            --
+            + update_password(new_hashed_password: str): void
+        }
+
+        class UserService <<Domain Service>> SERVICE_COLOR {
+            + {static} validate_full_name(full_name: str): void
+            + {static} validate_email(email: str): void
+            + {static} validate_password(password: str): void
+            + {static} validate_password_confirmation(password: str, confirm: str): void
+            + {static} create_user(full_name: str, email: str, password: str): User
+        }
+    }
+
+    package "Infrastructure Layer" <<Rectangle>> {
+        class UserModel <<ORM>> {
+            - full_name: str
+            - email: str
+            - hashed_password: str
+        }
+
+        class UserRepository <<Repository>> REPOSITORY_COLOR {
+            + to_model(entity: User): UserModel
+            + to_entity(model: UserModel): User
+            + find_by_email(email: str): User
+            + exists_by_email(email: str): bool
+        }
+
+        class HashingService <<Infrastructure Service>> {
+            + hash(password: str): str
+            + verify(password: str, hashed: str): bool
+        }
+
+        class TokenService <<Infrastructure Service>> {
+            - secret_key: str
+            - algorithm: str
+            - expire_minutes: int
+            + create_access_token(user_id: str): str
+            + decode_token(token: str): dict
+        }
+
+        class AuthMiddleware <<Middleware>> {
+            - security: HTTPBearer
+            + get_current_user(credentials: HTTPAuthorizationCredentials): User
+        }
+    }
+
+    package "Application Layer" <<Rectangle>> {
+        class UserApplicationService <<Application Service>> APPLICATION_SERVICE_COLOR {
+            - user_service: UserService
+            - user_repository: UserRepository
+            - hashing_service: HashingService
+            - token_service: TokenService
+            --
+            + sign_up(full_name: str, email: str, password: str, confirm: str): User
+            + sign_in(email: str, password: str): tuple[User, str]
+            + get_user_by_id(user_id: str): User
+        }
+    }
+
+    package "Interface Layer" <<Rectangle>> {
+        class SignUpRequest <<Request DTO>> VALUE_OBJECT_COLOR {
+            + full_name: str
+            + email: str
+            + password: str
+            + confirm_password: str
+        }
+
+        class SignInRequest <<Request DTO>> VALUE_OBJECT_COLOR {
+            + email: str
+            + password: str
+        }
+
+        class UserResponse <<Response DTO>> VALUE_OBJECT_COLOR {
+            + id: str
+            + full_name: str
+            + email: str
+        }
+
+        class AuthenticatedUserResponse <<Response DTO>> VALUE_OBJECT_COLOR {
+            + id: str
+            + full_name: str
+            + email: str
+            + token: str
+        }
+
+        class AuthController <<Controller>> CONTROLLER_COLOR {
+            - user_app_service: UserApplicationService
+            --
+            + sign_up(request: SignUpRequest): UserResponse
+            + sign_in(request: SignInRequest): AuthenticatedUserResponse
+        }
+    }
+
+    ' IAM Relationships
+    User --|> BaseEntity
+    UserModel --|> BaseModelORM
+    UserRepository --|> BaseRepository
+    UserRepository ..> User : manages
+    UserRepository ..> UserModel : maps
+    UserApplicationService --> UserService : uses
+    UserApplicationService --> UserRepository : uses
+    UserApplicationService --> HashingService : uses
+    UserApplicationService --> TokenService : uses
+    AuthController --> UserApplicationService : uses
+    AuthController ..> SignUpRequest : receives
+    AuthController ..> SignInRequest : receives
+    AuthController ..> UserResponse : returns
+    AuthController ..> AuthenticatedUserResponse : returns
+}
+
+' ============================================
+' PORT MANAGEMENT BOUNDED CONTEXT
+' ============================================
+package "Port Management Bounded Context" <<Frame>> {
+
+    package "Domain Layer " <<Rectangle>> {
+        class Port <<Entity>> ENTITY_COLOR {
+            - name: str
+            - country: str
+            - latitude: float
+            - longitude: float
+            - in_graph_type: str
+            - capacity: float
+            - port_type: str
+        }
+
+        class PortConnection <<Entity>> ENTITY_COLOR {
+            - port_a_id: str
+            - port_a_name: str
+            - port_b_id: str
+            - port_b_name: str
+            - distance_km: float
+            - time_hours: float
+            - cost_usd: float
+            - route_type: str
+            - is_restricted: bool
+        }
+
+        class PortService <<Domain Service>> SERVICE_COLOR {
+            + {static} create_port(name, country, in_graph_type, lat, lon, capacity, type): Port
+            + {static} update_port_info(port: Port, name, type, capacity): Port
+        }
+
+        class PortConnectionService <<Domain Service>> SERVICE_COLOR {
+            + {static} add_port_connection(port_a_id, port_b_id, distance, time, cost, type, restricted): PortConnection
+            + {static} update_connection_info(connection, distance, time, cost, restricted): PortConnection
+        }
+    }
+
+    package "Infrastructure Layer " <<Rectangle>> {
+        class PortModel <<ORM>> {
+            - name: str
+            - country: str
+            - latitude: float
+            - longitude: float
+            - in_graph_type: str
+            - capacity: float
+            - port_type: str
+        }
+
+        class PortConnectionModel <<ORM>> {
+            - port_a_id: str
+            - port_a_name: str
+            - port_b_id: str
+            - port_b_name: str
+            - distance_km: float
+            - time_hours: float
+            - cost_usd: float
+            - route_type: str
+            - is_restricted: bool
+        }
+
+        class PortRepository <<Repository>> REPOSITORY_COLOR {
+            + to_model(entity: Port): PortModel
+            + to_entity(model: PortModel): Port
+            + get_port_by_name(name: str): Port
+        }
+
+        class PortConnectionRepository <<Repository>> REPOSITORY_COLOR {
+            + to_model(entity: PortConnection): PortConnectionModel
+            + to_entity(model: PortConnectionModel): PortConnection
+            + get_connections_by_port_id(port_id: str): list[PortConnection]
+            + get_all_maritime_connections(): list[PortConnection]
+            + get_all_air_connections(): list[PortConnection]
+            + get_connection_by_origin_and_destination_name(origin, dest): PortConnection
+        }
+    }
+
+    package "Application Layer " <<Rectangle>> {
+        class PortApplicationService <<Application Service>> APPLICATION_SERVICE_COLOR {
+            - port_service: PortService
+            - port_repository: PortRepository
+            --
+            + seed_ports(file_url: str): void
+            + update_port(port_id, name, type, capacity): Port
+            + get_all_ports(): list[Port]
+            + get_port_by_id(port_id: str): Port
+            + get_port_by_name(port_name: str): Port
+        }
+
+        class PortConnectionApplicationService <<Application Service>> APPLICATION_SERVICE_COLOR {
+            - port_connection_service: PortConnectionService
+            - port_connection_repository: PortConnectionRepository
+            --
+            + seed_connections(file_url: str): void
+            + get_all_connections(): list[PortConnection]
+            + get_connections_by_port_id(connection_id: str): list[PortConnection]
+            + delete_connection(connection_id: str): void
+            + update_connection(id, distance, time, cost, restricted): PortConnection
+        }
+    }
+
+    package "Interface Layer " <<Rectangle>> {
+        class PortResponse <<Response DTO>> VALUE_OBJECT_COLOR {
+            + id: str
+            + name: str
+            + country: str
+            + in_graph_type: str
+            + capacity: float
+            + port_type: str
+            + connections: int
+            + coordinates: Coordinates
+        }
+
+        class PortConnectionResponse <<Response DTO>> VALUE_OBJECT_COLOR {
+            + id: str
+            + port_a_id: str
+            + port_b_id: str
+            + distance_km: float
+            + estimated_travel_time_hours: float
+            + cost_usd: float
+            + route_type: str
+            + is_restricted: bool
+        }
+
+        class Coordinates <<Value Object>> VALUE_OBJECT_COLOR {
+            + latitude: float
+            + longitude: float
+        }
+
+        class PortsController <<Controller>> CONTROLLER_COLOR {
+            - port_app_service: PortApplicationService
+            - connection_app_service: PortConnectionApplicationService
+            --
+            + get_port_by_id(port_id: str): PortResponse
+            + get_all_ports(): list[PortResponse]
+        }
+
+        class PortConnectionsController <<Controller>> CONTROLLER_COLOR {
+            - connection_app_service: PortConnectionApplicationService
+            --
+            + get_connection_by_id(connection_id: str): PortConnectionResponse
+            + get_all_connections(): list[PortConnectionResponse]
+        }
+    }
+
+    ' Port Management Relationships
+    Port --|> BaseEntity
+    PortConnection --|> BaseEntity
+    PortModel --|> BaseModelORM
+    PortConnectionModel --|> BaseModelORM
+    PortRepository --|> BaseRepository
+    PortConnectionRepository --|> BaseRepository
+    PortRepository ..> Port : manages
+    PortRepository ..> PortModel : maps
+    PortConnectionRepository ..> PortConnection : manages
+    PortConnectionRepository ..> PortConnectionModel : maps
+    PortApplicationService --> PortService : uses
+    PortApplicationService --> PortRepository : uses
+    PortConnectionApplicationService --> PortConnectionService : uses
+    PortConnectionApplicationService --> PortConnectionRepository : uses
+    PortsController --> PortApplicationService : uses
+    PortsController --> PortConnectionApplicationService : uses
+    PortConnectionsController --> PortConnectionApplicationService : uses
+    PortsController ..> PortResponse : returns
+    PortConnectionsController ..> PortConnectionResponse : returns
+    PortResponse *-- Coordinates : contains
+    PortConnection --> Port : references A
+    PortConnection --> Port : references B
+}
+
+' ============================================
+' ROUTE OPTIMIZATION BOUNDED CONTEXT
+' ============================================
+package "Route Optimization Bounded Context" <<Frame>> {
+
+    package "Domain Layer  " <<Rectangle>> {
+        class OptimalRoute <<Entity>> ENTITY_COLOR {
+            - origin_port_id: str
+            - origin_port_name: str
+            - destination_port_id: str
+            - destination_port_name: str
+            - route_mode: str
+            - algorithm_used: str
+            - total_cost: float
+            - total_distance: float
+            - total_time: float
+            - visited_ports: list[str]
+        }
+
+        interface RouteAlgorithm <<Interface>> {
+            + {abstract} find_optimal_route(graph, origin, dest, constraints): OptimalRoute
+        }
+
+        class BellmanFordAlgorithm <<Algorithm>> SERVICE_COLOR {
+            + find_optimal_route(graph, origin, dest, constraints): OptimalRoute
+            - calculate_weight(time, cost, distance, constraints): float
+            - detect_negative_cycles(graph): bool
+        }
+
+        class OptimalRouteService <<Domain Service>> SERVICE_COLOR {
+            - algorithm: RouteAlgorithm
+            + create_optimal_route(origin_id, origin_name, dest_id, dest_name, mode, algorithm, cost, distance, time, ports): OptimalRoute
+            + calculate_route(graph, origin, dest, constraints): OptimalRoute
+        }
+    }
+
+    package "Infrastructure Layer  " <<Rectangle>> {
+        class OptimalRouteModel <<ORM>> {
+            - origin_port_id: str
+            - origin_port_name: str
+            - destination_port_id: str
+            - destination_port_name: str
+            - route_mode: str
+            - algorithm_used: str
+            - total_cost: float
+            - total_distance: float
+            - total_time: float
+            - visited_ports: str
+        }
+
+        class OptimalRouteRepository <<Repository>> REPOSITORY_COLOR {
+            + to_model(entity: OptimalRoute): OptimalRouteModel
+            + to_entity(model: OptimalRouteModel): OptimalRoute
+            + get_routes_by_origin(origin_id: str): list[OptimalRoute]
+            + get_routes_by_destination(dest_id: str): list[OptimalRoute]
+        }
+    }
+
+    package "Application Layer  " <<Rectangle>> {
+        class OptimalRouteApplicationService <<Application Service>> APPLICATION_SERVICE_COLOR {
+            - optimal_route_service: OptimalRouteService
+            - optimal_route_repository: OptimalRouteRepository
+            - port_repository: PortRepository
+            - connection_repository: PortConnectionRepository
+            --
+            + calculate_optimal_route(origin_id, dest_id, mode, constraints): OptimalRoute
+            + get_all_optimal_routes(): list[OptimalRoute]
+            + get_optimal_route_by_id(route_id: str): OptimalRoute
+        }
+    }
+
+    package "Interface Layer  " <<Rectangle>> {
+        class RouteRequest <<Request DTO>> VALUE_OBJECT_COLOR {
+            + origin_port_id: str
+            + destination_port_id: str
+            + route_mode: str
+            + constraints: RouteConstraints
+        }
+
+        class RouteConstraints <<Value Object>> VALUE_OBJECT_COLOR {
+            + max_distance: float
+            + max_time: float
+            + max_cost: float
+            + avoid_ports: list[str]
+            + weight_time: float
+            + weight_cost: float
+            + weight_distance: float
+        }
+
+        class OptimalRouteResponse <<Response DTO>> VALUE_OBJECT_COLOR {
+            + id: str
+            + origin_port: PortSummary
+            + destination_port: PortSummary
+            + route_mode: str
+            + algorithm_used: str
+            + total_cost: float
+            + total_distance: float
+            + total_time: float
+            + nodes: list[PortSummary]
+            + edges: list[ConnectionSummary]
+        }
+
+        class PortSummary <<Value Object>> VALUE_OBJECT_COLOR {
+            + id: str
+            + name: str
+            + latitude: float
+            + longitude: float
+        }
+
+        class ConnectionSummary <<Value Object>> VALUE_OBJECT_COLOR {
+            + origin: str
+            + destination: str
+            + distance_km: float
+            + duration_hours: float
+        }
+
+        class OptimalRouteController <<Controller>> CONTROLLER_COLOR {
+            - optimal_route_app_service: OptimalRouteApplicationService
+            --
+            + calculate_route(request: RouteRequest): OptimalRouteResponse
+            + get_all_routes(): list[OptimalRouteResponse]
+            + get_route_by_id(route_id: str): OptimalRouteResponse
+        }
+    }
+
+    ' Route Optimization Relationships
+    OptimalRoute --|> BaseEntity
+    OptimalRouteModel --|> BaseModelORM
+    OptimalRouteRepository --|> BaseRepository
+    BellmanFordAlgorithm ..|> RouteAlgorithm : implements
+    OptimalRouteService --> RouteAlgorithm : uses
+    OptimalRouteRepository ..> OptimalRoute : manages
+    OptimalRouteRepository ..> OptimalRouteModel : maps
+    OptimalRouteApplicationService --> OptimalRouteService : uses
+    OptimalRouteApplicationService --> OptimalRouteRepository : uses
+    OptimalRouteApplicationService --> PortRepository : uses
+    OptimalRouteApplicationService --> PortConnectionRepository : uses
+    OptimalRouteController --> OptimalRouteApplicationService : uses
+    OptimalRouteController ..> RouteRequest : receives
+    OptimalRouteController ..> OptimalRouteResponse : returns
+    RouteRequest *-- RouteConstraints : contains
+    OptimalRouteResponse *-- PortSummary : contains
+    OptimalRouteResponse *-- ConnectionSummary : contains
+}
+
+' ============================================
+' EXPORT MANAGEMENT BOUNDED CONTEXT
+' ============================================
+package "Export Management Bounded Context" <<Frame>> {
+
+    package "Domain Layer   " <<Rectangle>> {
+        class Export <<Entity>> ENTITY_COLOR {
+            - comercial_description: str
+            - transportation_mode: str
+            - us_fob: float
+            - gross_weight: float
+            - net_weight: float
+            - unit: str
+            - quantity: float
+            - optimized_route_id: str
+            - user_id: str
+        }
+
+        class ExportService <<Domain Service>> SERVICE_COLOR {
+            + {static} create_export(comercial_desc, transport_mode, fob, gross_weight, net_weight, unit, quantity, route_id, user_id): Export
+        }
+    }
+
+    package "Infrastructure Layer   " <<Rectangle>> {
+        class ExportModel <<ORM>> {
+            - comercial_description: str
+            - transportation_mode: str
+            - us_fob: float
+            - gross_weight: float
+            - net_weight: float
+            - unit: str
+            - quantity: float
+            - optimized_route_id: str
+            - user_id: str
+        }
+
+        class ExportRepository <<Repository>> REPOSITORY_COLOR {
+            + to_model(entity: Export): ExportModel
+            + to_entity(model: ExportModel): Export
+            + get_by_route_id(route_id: str): list[Export]
+            + get_by_user_id(user_id: str): list[Export]
+        }
+    }
+
+    package "Application Layer   " <<Rectangle>> {
+        class ExportApplicationService <<Application Service>> APPLICATION_SERVICE_COLOR {
+            - export_service: ExportService
+            - export_repository: ExportRepository
+            --
+            + register_export(comercial_desc, transport_mode, fob, gross_weight, net_weight, unit, quantity, route_id, user_id): Export
+            + get_export_by_id(export_id: str): Export
+            + assign_route_id_to_export(export_id, route_id): Export
+        }
+    }
+
+    package "Interface Layer   " <<Rectangle>> {
+        class ExportRequest <<Request DTO>> VALUE_OBJECT_COLOR {
+            + comercial_description: str
+            + transportation_mode: str
+            + us_fob: float
+            + gross_weight: float
+            + net_weight: float
+            + unit: str
+            + quantity: float
+            + optimized_route_id: str
+            + user_id: str
+        }
+
+        class ExportResponse <<Response DTO>> VALUE_OBJECT_COLOR {
+            + id: str
+            + comercial_description: str
+            + transportation_mode: str
+            + us_fob: float
+            + gross_weight: float
+            + net_weight: float
+            + unit: str
+            + quantity: float
+            + optimized_route_id: str
+            + user_id: str
+        }
+
+        class ExportsController <<Controller>> CONTROLLER_COLOR {
+            - export_app_service: ExportApplicationService
+            --
+            + register_export(request: ExportRequest): ExportResponse
+            + get_export_by_id(export_id: str): ExportResponse
+            + assign_route_id_to_export(export_id, route_id): ExportResponse
+        }
+    }
+
+    ' Export Management Relationships
+    Export --|> BaseEntity
+    ExportModel --|> BaseModelORM
+    ExportRepository --|> BaseRepository
+    ExportRepository ..> Export : manages
+    ExportRepository ..> ExportModel : maps
+    ExportApplicationService --> ExportService : uses
+    ExportApplicationService --> ExportRepository : uses
+    ExportsController --> ExportApplicationService : uses
+    ExportsController ..> ExportRequest : receives
+    ExportsController ..> ExportResponse : returns
+    Export --> OptimalRoute : references
+    Export --> User : created_by
+}
+
+' ============================================
+' CROSS-CONTEXT RELATIONSHIPS
+' ============================================
+OptimalRoute --> Port : origin_port
+OptimalRoute --> Port : destination_port
+OptimalRouteService --> PortConnection : analyzes
+AuthMiddleware --> User : authenticates
+PortsController ..> AuthMiddleware : protected by
+OptimalRouteController ..> AuthMiddleware : protected by
+
+' ============================================
+' LEGEND
+' ============================================
+legend right
+    |<ENTITY_COLOR>| Entity |
+    |<VALUE_OBJECT_COLOR>| Value Object / DTO |
+    |<SERVICE_COLOR>| Domain Service |
+    |<REPOSITORY_COLOR>| Repository |
+    |<CONTROLLER_COLOR>| Controller |
+    |<APPLICATION_SERVICE_COLOR>| Application Service |
+    
+    **Architecture Layers:**
+    - Domain Layer: Business logic, entities, domain services
+    - Infrastructure Layer: ORM models, repositories, external services
+    - Application Layer: Use cases, orchestration
+    - Interface Layer: Controllers, DTOs, API contracts
+    
+    **Key Patterns:**
+    - Hexagonal Architecture (Ports & Adapters)
+    - Domain-Driven Design (DDD)
+    - Repository Pattern
+    - Dependency Injection
+    - DTOs for API contracts
+endlegend
+
+@enduml

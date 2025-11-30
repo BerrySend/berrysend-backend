@@ -1,0 +1,115 @@
+from sqlalchemy import Result, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.port_management.infrastructure.models.port_connection_model import PortConnectionModel
+from app.shared.infrastructure.repositories.base_repository import BaseRepository, TModel, TEntity
+from app.port_management.domain.models.port_connection import PortConnection
+
+class PortConnectionRepository(BaseRepository[PortConnection, PortConnectionModel]):
+    def __init__(self, db: AsyncSession):
+        """
+        Initializes a new instance of PortConnectionRepository.
+
+        :param db: The database session
+        """
+        super().__init__(db, PortConnectionModel)
+
+    def to_model(self, entity: PortConnection) -> "PortConnectionModel":
+        """
+        Transform a port connection entity into a port connection model.
+
+        :param entity: The port connection entity to transform.
+
+        :return: The corresponding port connection model.
+        """
+        return PortConnectionModel(
+            id=entity.id,
+            port_a_id=entity.port_a_id,
+            port_a_name=entity.port_a_name,
+            port_b_id=entity.port_b_id,
+            port_b_name=entity.port_b_name,
+            distance_km=entity.distance_km,
+            time_hours=entity.time_hours,
+            cost_usd=entity.cost_usd,
+            route_type=entity.route_type,
+            is_restricted=entity.is_restricted
+        )
+
+    def to_entity(self, model: PortConnectionModel) -> "PortConnection":
+        """
+        Transform a port connection model into a port connection entity.
+
+        :param model: The port connection model to transform.
+
+        :return: The corresponding port connection entity.
+        """
+        return PortConnection(
+            id=model.id,
+            port_a_id=model.port_a_id,
+            port_a_name=model.port_a_name,
+            port_b_id=model.port_b_id,
+            port_b_name=model.port_b_name,
+            distance_km=model.distance_km,
+            time_hours=model.time_hours,
+            cost_usd=model.cost_usd,
+            route_type=model.route_type,
+            is_restricted=model.is_restricted
+        )
+
+    async def get_connections_by_port_id(self, port_id: str) -> list["PortConnection"]:
+        """
+        Retrieve all port connections for a given port id.
+
+        :param port_id: The id of the port.
+
+        :return: A list of port connections associated with the given port id.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.port_a_id == port_id)
+        )
+        model = result.scalars().all()
+        return [self.to_entity(m) for m in model]
+
+    async def get_all_maritime_connections(self) -> list["PortConnection"]:
+        """
+        Retrieve all maritime port connections.
+
+        :return: A list of maritime port connections.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.route_type == "maritime")
+        )
+        model = result.scalars().all()
+        return [self.to_entity(m) for m in model]
+
+    async def get_all_air_connections(self) -> list["PortConnection"]:
+        """
+        Retrieve all airport connections.
+
+        :return: A list of airport connections.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(self._model.route_type == "air")
+        )
+        model = result.scalars().all()
+        return [self.to_entity(m) for m in model]
+
+    async def get_connection_by_origin_and_destination_name(self, origin_name: str, destination_name: str) -> "PortConnection | None":
+        """
+        Retrieve a port connection by its origin and destination port names.
+
+        :param origin_name: The name of the origin port.
+        :param destination_name: The name of the destination port.
+
+        :return: The port connection entity if found, otherwise None.
+        """
+        result: Result = await self._db.execute(
+            select(self._model).where(
+                (self._model.port_a_name == origin_name) &
+                (self._model.port_b_name == destination_name)
+            )
+        )
+        model = result.scalars().first()
+        if model:
+            return self.to_entity(model)
+        return None

@@ -17,7 +17,9 @@ For the development of the BerrySend Platform API, the following technologies an
 - **MySQL**: A relational database used for storing inventory data, providing flexibility and scalability.
 - **Swagger UI**: For API documentation and testing, allowing developers to easily explore and interact with the API endpoints.
 - **OpenAPI**: For defining the API specifications, ensuring clear and consistent communication between the frontend and backend.
-- **Feature-Oriented**: The application is designed to be modular and feature-oriented, allowing for easy extension and maintenance.
+- **Domain-Driven Design (DDD)**: An architectural approach used to structure the application around the core business domain, enhancing maintainability and scalability.
+- **SQLAlchemy**: A Python ORM used to interact with the database.
+- **AlembicSQL**: An SQLAlchemy extension used to generate database migrations.
 
 ## Documentation
 
