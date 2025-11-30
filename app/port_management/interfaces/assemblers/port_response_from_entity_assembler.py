@@ -23,7 +23,8 @@ def assemble_port_response_from_entity(port_entity: Port, connections: int) -> P
         id=port_entity.id,
         name=port_entity.name,
         country=port_entity.country,
-        type=port_entity.type,
+        in_graph_type=port_entity.in_graph_type,
+        port_type=port_entity.port_type,
         capacity=port_entity.capacity,
         connections=connections,
         coordinates=Coordinates(

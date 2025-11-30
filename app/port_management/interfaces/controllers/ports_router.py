@@ -1,6 +1,6 @@
 ﻿from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, status, Path, Response
+from fastapi import APIRouter, Depends, status, Path, Response, HTTPException
 from fastapi.openapi.models import Example
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -62,8 +62,10 @@ async def get_port_by_id(
     try:
         port: Port = await port_app_service.get_port_by_id(port_id)
         if not port:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"error": "Port for given id not found"}
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Port for given id not found"
+            )
 
         connections = await connections_app_service.get_connections_by_port_id(port_id)
         connections_number = len(connections)
@@ -71,39 +73,61 @@ async def get_port_by_id(
         response = assemble_port_response_from_entity(port, connections_number)
         return response
     except ValueError as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.get("", response_model=list[PortResponse], status_code=status.HTTP_200_OK)
 async def get_all_ports(
-        response: Response,
+        search: str | None = None,
         port_app_service: PortApplicationService = Depends(get_port_app_service),
         connections_app_service: PortConnectionApplicationService = Depends(get_connection_app_service)
 ) -> Any:
     """
-    Retrieve all ports.
+    Retrieve all ports, optionally filtered by search term.
 
+    :param search: Optional search term to filter ports by name or country
     :param connections_app_service: Injected port connection application service.
-    :param response: To set the status code.
     :param port_app_service: The port application service.
     :return: A list of ports if found, otherwise an empty list.
     """
     try:
         ports: list[Port] = await port_app_service.get_all_ports()
+        
+        # Filter by search term if provided
+        if search and search.strip():
+            search_lower = search.strip().lower()
+            ports = [
+                port for port in ports
+                if (search_lower in port.name.lower() if port.name else False) or
+                   (search_lower in port.country.lower() if port.country else False)
+            ]
+        
         if len(ports) == 0:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"error": "Ports not found"}
+            # Return empty list instead of 404 when no ports match
+            return []
+        
         ports_response = []
         for port in ports:
-            connections = await connections_app_service.get_connections_by_port_id(port.id)
-            connections_number = len(connections)
+            try:
+                connections = await connections_app_service.get_connections_by_port_id(port.id)
+                connections_number = len(connections)
+            except Exception:
+                # If connections fail, set to 0 and continue
+                connections_number = 0
+            
             ports_response.append(assemble_port_response_from_entity(port, connections_number))
 
         return ports_response
-    except ValueError as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+    except Exception as e:
+        # Log the error but return a proper error response
+        print(f"Error in get_all_ports: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving ports: {str(e)}"
+        )
 
 @router.get("/{port_id}/connections", response_model=list[PortConnectionResponse], status_code=status.HTTP_200_OK)
 async def get_connections_by_port_id(
@@ -123,13 +147,17 @@ async def get_connections_by_port_id(
     try:
         connections = await connection_app_service.get_connections_by_port_id(port_id)
         if len(connections) == 0:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"error": "Connections for given port id not found"}
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Connections for given port id not found"
+            )
 
         responses = []
         for connection in connections:
             responses.append(assemble_connection_response_from_entity(connection))
         return responses
     except ValueError as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

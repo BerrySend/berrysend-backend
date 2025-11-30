@@ -96,16 +96,25 @@ class PortRepository(BaseRepository[Port, PortModel]):
 
     async def get_port_by_name(self, name: str):
         """
-        Retrieve a port by its name.
+        Retrieve a port by its name. First tries exact match, then partial match.
 
         :param name: The name of the port to retrieve.
         :return: The port entity if found, otherwise None.
         """
 
+        # Try exact match first
         result: Result = await self._db.execute(
             select(self._model).where(self._model.name == name)
         )
-        if result:
+        model = result.scalars().first()
+        
+        # If no exact match, try partial match (e.g., "Buenos Aires" matches "Buenos Aires (EZE Argentina)")
+        if not model:
+            result: Result = await self._db.execute(
+                select(self._model).where(self._model.name.like(f"{name}%"))
+            )
             model = result.scalars().first()
+        
+        if model:
             return self.to_entity(model)
         return None

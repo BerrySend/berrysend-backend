@@ -144,6 +144,30 @@ class ExportApplicationService:
 
         return exports
 
+    async def get_exports_by_user_id(self, user_id: str) -> list["Export"]:
+        """
+        Retrieve all export records for a specific user.
+
+        This asynchronous function fetches all export records from the export
+        repository that belong to the specified user. Returns an empty list if
+        no exports are found for the user.
+
+        :param user_id: The unique identifier of the user.
+        :type user_id: str
+        :return: A list of export records belonging to the user.
+        :rtype: list[Export]
+
+        :raises ValueError: If an error occurs during the retrieval process.
+        """
+        try:
+            if user_id is None or user_id.strip() == "":
+                raise ValueError("To retrieve exports, you must provide a valid user id.")
+
+            exports = await self.export_repository.get_by_user_id(user_id)
+            return exports
+        except ValueError as e:
+            raise ValueError(f"Error trying to retrieve exports by user: {e}")
+
     async def get_route_by_export_id(self, export_id: str) -> "OptimalRoute | None":
         """
         Retrieve an optimal route based on the provided export ID.

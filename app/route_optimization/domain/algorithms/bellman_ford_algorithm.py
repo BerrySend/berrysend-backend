@@ -29,18 +29,15 @@ class BellmanFordAlgorithm:
 
     def add_port(self, port, port_name=None):
         """
-        Adds a port to the port dictionary and initializes its edges.
+        Adds a port to the port dictionary.
 
         This method will add a given port to the `ports` dictionary using the port's
-        name as the key. Additionally, if the port's name is not already present in the
-        `edges` dictionary, it will initialize an empty list for it.
+        name as the key.
 
         :param port: The port to be added.
         :param port_name: The name of the port. Defaults to the port's name.
         """
         self.ports[port_name] = port
-        if port_name not in self.edges:
-            self.edges[port_name] = []
 
     def add_connection(self, port1, port2, weight=0):
         """
@@ -65,8 +62,8 @@ class BellmanFordAlgorithm:
         The method computes both the shortest distance and the corresponding path
         as a list of nodes.
 
-        :param export_weight: The weight of product to export.
-        :type export_weight: float
+        :param export_weight: The weight of a product to export.
+        :type export_weight: Float
 
         :param origin: Starting vertex for the shortest path calculation
         :type origin: str

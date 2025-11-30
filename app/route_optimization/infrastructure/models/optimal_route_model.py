@@ -45,5 +45,5 @@ class OptimalRouteModel(BaseModelORM):
     visited_ports = Column(JSON, nullable=False)
 
     # Relationships
-    origin_port = relationship("Port", foreign_keys=[origin_port_id])
-    destination_port = relationship("Port", foreign_keys=[destination_port_id])
+    origin_port = relationship("PortModel", foreign_keys=[origin_port_id])
+    destination_port = relationship("PortModel", foreign_keys=[destination_port_id])

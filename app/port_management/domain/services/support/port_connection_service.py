@@ -13,7 +13,9 @@ class PortConnectionService:
     @staticmethod
     def add_port_connection(
         port_a_id: str,
+        port_a_name: str,
         port_b_id: str,
+        port_b_name: str,
         distance_km: float,
         time_hours: float,
         cost_usd: float,
@@ -24,7 +26,9 @@ class PortConnectionService:
         Adds a port connection to the route planning domain.
 
         :param port_a_id: The id of port A
+        :param port_a_name: The name of port A
         :param port_b_id: The id of port B
+        :param port_b_name: The name of port B
         :param distance_km: The distance in km
         :param time_hours: The time in hours
         :param cost_usd: The cost in usd
@@ -48,8 +52,12 @@ class PortConnectionService:
                 raise ValueError("Distance in km must be greater than 0")
             if port_a_id.strip() == "":
                 raise ValueError("Id of port A cannot be an empty string")
+            if port_a_name.strip() == "":
+                raise ValueError("Name of port A cannot be an empty string")
             if port_b_id.strip() == "":
                 raise ValueError("Id of port B cannot be an empty string")
+            if port_b_name.strip() == "":
+                raise ValueError("Name of port B cannot be an empty string")
             if port_b_id == port_a_id:
                 raise ValueError("The id of both ports have to be different")
             if route_type.strip() == "":
@@ -59,7 +67,9 @@ class PortConnectionService:
 
         return PortConnection(
             port_a_id = port_a_id,
+            port_a_name = port_a_name,
             port_b_id = port_b_id,
+            port_b_name = port_b_name,
             distance_km = distance_km,
             time_hours = time_hours,
             cost_usd = cost_usd,

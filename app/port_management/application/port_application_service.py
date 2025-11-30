@@ -21,6 +21,7 @@ class PortApplicationService:
     async def seed_ports(self, file_url: str) -> None:
         """
         Reads the CSV file of ports, validates it with the port service, and creates the ports in the database.
+        Skips if ports of the same type already exist to avoid duplicates.
 
         :param file_url: The url of the CSV file.
         :exception ValueError: If the data format of the CSV file is invalid.
@@ -39,6 +40,15 @@ class PortApplicationService:
             return
 
         print(f"Successfully fetched {len(rows)} rows from CSV. Starting to seed ports...")
+
+        # Determine port type from first row to check for existing ports of this type
+        if len(rows) > 0 and "port_type" in rows[0]:
+            sample_port_type = rows[0]["port_type"].strip()
+            existing_ports = await self.port_repository.get_all()
+            existing_of_type = [p for p in existing_ports if p.port_type == sample_port_type]
+            if len(existing_of_type) > 0:
+                print(f"Ports of type '{sample_port_type}' already seeded ({len(existing_of_type)} found). Skipping.")
+                return
 
         row_id = 1
 

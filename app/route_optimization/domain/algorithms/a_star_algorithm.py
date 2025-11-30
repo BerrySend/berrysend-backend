@@ -76,13 +76,13 @@ class AStarAlgorithm:
         earth_radius = 6371  # km
 
         # Calculating the distance using the Haversine formula
-        phi1, phi2 = math.radians(p1.lat), math.radians(p2.lat)
+        phi1, phi2 = math.radians(p1.latitude), math.radians(p2.latitude)
 
         # Finds the delta pi by subtracting the latitudes
-        delta_phi = math.radians(p2.lat - p1.lat)
+        delta_phi = math.radians(p2.latitude - p1.latitude)
 
         # Finds the delta lambda by subtracting the longitudes
-        delta_lambda = math.radians(p2.lon - p1.lon)
+        delta_lambda = math.radians(p2.longitude - p1.longitude)
 
         # Calculates the Haversine formula
         a = math.sin(delta_phi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) ** 2

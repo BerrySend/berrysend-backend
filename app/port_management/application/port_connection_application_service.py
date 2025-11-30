@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.port_management.domain.services.support.port_connection_service import PortConnectionService
 from app.port_management.infrastructure.repositories.port_connection_repository import PortConnectionRepository
+from app.port_management.infrastructure.repositories.port_repository import PortRepository
 from app.shared.infrastructure.readers.csv_reader import read_csv_from_url
 from app.port_management.domain.models.port_connection import PortConnection
 
@@ -17,11 +18,13 @@ class PortConnectionApplicationService:
         """
         self.port_connection_service = PortConnectionService()
         self.port_connection_repository = PortConnectionRepository(db)
+        self.port_repository = PortRepository(db)
 
     async def seed_connections(self, file_url: str) -> None:
         """
         Reads the CSV file of port connections, validates it with the port connection service,
         and creates the port connections in the database.
+        Skips if connections of the same type already exist to avoid duplicates.
 
         :param file_url: The url of the CSV file.
 
@@ -42,21 +45,46 @@ class PortConnectionApplicationService:
 
         print(f"Successfully fetched {len(connection_rows)} rows from CSV. Starting to seed connections...")
 
+        # Check if connections of this type already exist (check using first row's route_type)
+        if len(connection_rows) > 0 and "route_type" in connection_rows[0]:
+            sample_route_type = connection_rows[0]["route_type"].strip()
+            existing_connections = await self.port_connection_repository.get_all()
+            existing_of_type = [c for c in existing_connections if c.route_type == sample_route_type]
+            if len(existing_of_type) > 0:
+                print(f"Connections of type '{sample_route_type}' already seeded ({len(existing_of_type)} found). Skipping.")
+                return
+
         row_id = 1
 
         for row in connection_rows:
             try:
-                port_a_id: str = row["port_a_id"].strip()
-                port_b_id: str = row["port_b_id"].strip()
+                port_a_name: str = row["port_a_name"].strip()
+                port_b_name: str = row["port_b_name"].strip()
                 distance_km: float = float(row["distance_km"])
                 time_hours: float = float(row["time_hours"])
                 cost_usd: float = float(row["cost_usd"])
                 route_type: str = row["route_type"].strip()
-                is_restricted: bool = row["is_restricted"].strip().lower() == False
+                is_restricted: bool = row["is_restricted"].strip().lower() == "true"
+
+                # Look up port IDs by name
+                port_a = await self.port_repository.get_port_by_name(port_a_name)
+                port_b = await self.port_repository.get_port_by_name(port_b_name)
+
+                if not port_a:
+                    print(f"Port not found: {port_a_name} at row {row_id}")
+                    row_id += 1
+                    continue
+
+                if not port_b:
+                    print(f"Port not found: {port_b_name} at row {row_id}")
+                    row_id += 1
+                    continue
 
                 connection = self.port_connection_service.add_port_connection(
-                    port_a_id,
-                    port_b_id,
+                    port_a.id,
+                    port_a.name,
+                    port_b.id,
+                    port_b.name,
                     distance_km,
                     time_hours,
                     cost_usd,
@@ -67,8 +95,8 @@ class PortConnectionApplicationService:
                 await self.port_connection_repository.create(connection)
 
                 print(f"Added connection {connection.id} at row {row_id}")
-            except (ValueError, KeyError):
-                print(f"Invalid data format for row number {row_id}")
+            except (ValueError, KeyError) as e:
+                print(f"Invalid data format for row number {row_id}: {e}")
 
             row_id += 1
 

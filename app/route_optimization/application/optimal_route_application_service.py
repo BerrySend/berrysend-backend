@@ -52,14 +52,18 @@ class OptimalRouteApplicationService:
         # (1) Retrieve ports and connections
         # ---------------------------------------------------------
         try:
-            if mode == "maritime":
-                ports = await self.ports_repository.get_all_maritime_ports()
-                connections = await self.connections_repository.get_all_maritime_connections()
-            elif mode == "air":
-                ports = await self.ports_repository.get_all_air_ports()
-                connections = await self.connections_repository.get_all_air_connections()
-            else:
-                raise ValueError(f"Invalid mode '{mode}'. Must be 'maritime' or 'air'.")
+            # Always use multimodal to support intermodal connections
+            # This allows routes between maritime and air ports
+            maritime_ports = await self.ports_repository.get_all_maritime_ports()
+            air_ports = await self.ports_repository.get_all_air_ports()
+            ports = maritime_ports + air_ports
+            
+            maritime_connections = await self.connections_repository.get_all_maritime_connections()
+            air_connections = await self.connections_repository.get_all_air_connections()
+            connections = maritime_connections + air_connections
+            
+            # Keep mode for record-keeping purposes
+            actual_mode = mode if mode in ["maritime", "air", "multimodal"] else "multimodal"
         except ValueError as e:
             raise ValueError(f"Error trying to retrieve ports and connections: {e}")
 
@@ -73,10 +77,10 @@ class OptimalRouteApplicationService:
                 algorithm_used = "AStar"
 
             elif algo == "bellman-ford" or algo == "bellmanford":
-                # Validate BF parameters
-                cost_m = cost_m or 1
-                distance_m = distance_m or 1
-                time_m = time_m or 1
+                # Validate BF parameters - use 'if is None' to allow 0 values
+                cost_m = cost_m if cost_m is not None else 1.0
+                distance_m = distance_m if distance_m is not None else 1.0
+                time_m = time_m if time_m is not None else 1.0
 
                 service = BellmanFordAlgorithmService(cost_m, distance_m, time_m)
                 algorithm_used = "Bellman-Ford"
@@ -94,19 +98,46 @@ class OptimalRouteApplicationService:
         service.build_graph(ports, connections)
 
         # ---------------------------------------------------------
-        # (3) Execute selected algorithm
+        # (3) Get port entities to retrieve their names for the algorithm
+        #     Accept both IDs and names - try ID first, then name
+        # ---------------------------------------------------------
+        # Try as ID first
+        start_port = await self.ports_repository.get_by_id(start_port_name)
+        if not start_port:
+            # Try as name if ID lookup failed
+            start_port = await self.ports_repository.get_port_by_name(start_port_name)
+        
+        end_port = await self.ports_repository.get_by_id(end_port_name)
+        if not end_port:
+            # Try as name if ID lookup failed
+            end_port = await self.ports_repository.get_port_by_name(end_port_name)
+        
+        if not start_port:
+            raise ValueError(f"Start port '{start_port_name}' not found")
+        if not end_port:
+            raise ValueError(f"End port '{end_port_name}' not found")
+
+        # ---------------------------------------------------------
+        # (4) Execute selected algorithm
         # ---------------------------------------------------------
         try:
             total_weight, optimal_route = service.compute_algorithm(
-                start_port_name,
-                end_port_name,
+                start_port.name,
+                end_port.name,
                 export_weight
             )
+            
+            if total_weight == float('inf'):
+                raise ValueError(f"No route found between {start_port.name} and {end_port.name}. Ports may not be connected or capacity insufficient.")
+            
+        except ValueError as e:
+            # Re-raise ValueError as-is (will be caught by HTTPException handler in controller)
+            raise
         except Exception as e:
-            raise Exception(f"Error trying to compute optimal route: {e}")
+            raise ValueError(f"Error trying to compute optimal route: {e}")
 
         # ---------------------------------------------------------
-        # (4) Build connection list (route edges)
+        # (5) Build connection list (route edges)
         # ---------------------------------------------------------
         connections_list = []
         for i in range(len(optimal_route) - 1):
@@ -116,38 +147,34 @@ class OptimalRouteApplicationService:
             connection = await self.connections_repository.get_connection_by_origin_and_destination_name(
                 origin, dest
             )
-            connections_list.append(connection)
+            if connection:
+                connections_list.append(connection)
+            else:
+                print(f"WARNING: Connection not found between {origin} -> {dest}")
 
         # ---------------------------------------------------------
         # (5) Aggregate totals depending on the algorithm
         # ---------------------------------------------------------
+        if len(connections_list) == 0:
+            raise ValueError(f"No connections found for route: {optimal_route}")
+        
+        # Calculate REAL totals from connections (not from algorithm weight)
         total_distance = sum(conn.distance_km for conn in connections_list)
         total_time = sum(conn.time_hours for conn in connections_list)
         total_cost = sum(conn.cost_usd for conn in connections_list)
 
-        # For A* and Dijkstra, the algorithm returns time or distance instead of weight
-        if algo == "a*" or algo == "astar":
-            # service returned (distance, route)
-            total_distance = total_weight
-
-        elif algo == "dijkstra":
-            # service returned (time, route)
-            total_time = total_weight
-
-        # Bellman-Ford keeps all 3 actual values
+        # NOTE: total_weight from algorithms is their optimization metric,
+        # but we always return REAL distance/time/cost values to the user
 
         # ---------------------------------------------------------
         # (6) Register route
         # ---------------------------------------------------------
-        origin_port = await self.ports_repository.get_port_by_name(start_port_name)
-        destination_port = await self.ports_repository.get_port_by_name(end_port_name)
-
         optimal_route_obj = self.optimal_route_service.register_optimal_route(
-            origin_port_id=origin_port.id,
-            origin_port_name=origin_port.name,
-            destination_port_id=destination_port.id,
-            destination_port_name=destination_port.name,
-            route_mode=mode,
+            origin_port_id=start_port.id,
+            origin_port_name=start_port.name,
+            destination_port_id=end_port.id,
+            destination_port_name=end_port.name,
+            route_mode=actual_mode,
             algorithm_used=algorithm_used,
             total_cost=total_cost,
             total_distance=total_distance,

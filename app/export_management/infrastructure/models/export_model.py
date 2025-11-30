@@ -43,5 +43,5 @@ class ExportModel(BaseModelORM):
     user_id: Mapped[str] = Column(String(255), ForeignKey("users.id"))
 
     # Relationships
-    optimized_route = relationship("OptimizedRoute", foreign_keys=[optimized_route_id])
-    user = relationship("User", foreign_keys=[user_id])
+    optimized_route = relationship("OptimalRouteModel", foreign_keys=[optimized_route_id])
+    user = relationship("UserModel", foreign_keys=[user_id])

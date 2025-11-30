@@ -37,13 +37,18 @@ class BellmanFordAlgorithmService:
         :type connections: list[PortConnection]
         :return: None
         """
+        # Create set of port names for quick lookup
+        port_names = {port.name for port in ports}
+        
         for port in ports:
             self.algorithm.add_port(port, port.name)
 
         for conn in connections:
             if not conn.is_restricted:
-                final_weight = self.weight_calculation_service.calculate(conn)
-                self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, final_weight)
+                # Only add connection if both ports exist in the graph
+                if conn.port_a_name in port_names and conn.port_b_name in port_names:
+                    final_weight = self.weight_calculation_service.calculate(conn)
+                    self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, final_weight)
 
     def compute_algorithm(self, start_port_name: str, end_port_name: str, export_weight: float) -> tuple[float, list[str]]:
         """

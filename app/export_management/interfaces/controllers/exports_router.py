@@ -1,8 +1,9 @@
 ﻿from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, status, Path
-from fastapi.openapi.models import Example, Response
+from fastapi.openapi.models import Example
 from fastapi.params import Query
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.export_management.application.export_application_service import ExportApplicationService
@@ -10,6 +11,8 @@ from app.export_management.interfaces.assemblers.export_response_from_entity_ass
     assemble_export_response_from_entity
 from app.export_management.interfaces.schemas.requests.export_request import ExportRequest
 from app.export_management.interfaces.schemas.responses.export_response import ExportResponse
+from app.iam.domain.models.user import User
+from app.iam.infrastructure.middleware.authorize_user import get_current_user
 from app.shared.infrastructure.persistence.session_generator import get_db
 
 # Create a router for the exports
@@ -19,6 +22,41 @@ router = APIRouter(prefix="/api/v1/exports", tags=["Exports"])
 # Get export application service
 def get_export_app_service(db: AsyncSession = Depends(get_db)) -> "ExportApplicationService":
     return ExportApplicationService(db)
+
+
+@router.get("", response_model=list[ExportResponse], status_code=status.HTTP_200_OK)
+async def get_exports(
+        user_id: str | None = Query(None, description="Filter exports by user ID"),
+        current_user: User = Depends(get_current_user),
+        export_app_service: ExportApplicationService = Depends(get_export_app_service)
+) -> Any:
+    """
+    Retrieves exports, optionally filtered by user ID.
+
+    This endpoint fetches export records. If a user_id query parameter is provided,
+    it returns only exports belonging to that user. Otherwise, it returns all exports.
+
+    :param user_id: Optional user ID to filter exports. If not provided, returns all exports.
+    :param current_user: The authenticated user making the request.
+    :param export_app_service: The dependency-injected export application service.
+    :return: A list of export records as response models.
+    """
+    try:
+        if user_id:
+            exports = await export_app_service.get_exports_by_user_id(user_id)
+        else:
+            exports = await export_app_service.get_all_exports()
+
+        if not exports:
+            return []
+
+        export_responses = [assemble_export_response_from_entity(export) for export in exports]
+        return export_responses
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(e)}
+        )
 
 
 @router.get("/{export_id}", response_model=ExportResponse, status_code=status.HTTP_200_OK)
@@ -42,7 +80,7 @@ async def get_export_by_id(
                 )
             }
         )],
-        response: Response,
+        current_user: User = Depends(get_current_user),
         export_app_service: ExportApplicationService = Depends(get_export_app_service)
 ) -> Any:
     """
@@ -54,7 +92,6 @@ async def get_export_by_id(
 
     :param export_id: The unique identifier of the export record to retrieve. Must be a valid
         UUID to ensure proper identification.
-    :param response: The response object for setting the HTTP status code manually if necessary.
     :param export_app_service: The dependency-injected export application service that
         manages the retrieval and processing of export records.
     :return: The export details as a structured response model or an error message if
@@ -63,19 +100,24 @@ async def get_export_by_id(
     try:
         export = await export_app_service.get_export_by_id(export_id)
         if not export:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"error": "Export for given id not found"}
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"error": "Export for given id not found"}
+            )
 
-        response = assemble_export_response_from_entity(export)
-        return response
+        export_response = assemble_export_response_from_entity(export)
+        return export_response
     except Exception as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": str(e)}
+        )
+
 
 @router.post("/", response_model=ExportResponse, status_code=status.HTTP_201_CREATED)
 async def register_export(
         export: ExportRequest,
-        response: Response,
+        current_user: User = Depends(get_current_user),
         export_app_service: ExportApplicationService = Depends(get_export_app_service)
 ) -> Any:
     """
@@ -89,8 +131,6 @@ async def register_export(
 
     :param export: The data necessary for creating the export registration.
     :type export: ExportRequest
-    :param response: Instance of the response class to set status codes and details.
-    :type response: Response
     :param export_app_service: Service dependency to handle export operations.
     :type export_app_service: ExportApplicationService
     :return: The response containing the registered export details or an error
@@ -98,7 +138,7 @@ async def register_export(
     :rtype: Any
     """
     try:
-        export = await export_app_service.register_export(
+        created_export = await export_app_service.register_export(
             export.comercial_description,
             export.transportation_mode,
             export.us_fob,
@@ -110,19 +150,23 @@ async def register_export(
             export.user_id
         )
 
-        if not export:
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            return {"error": "Failed to create export."}
+        if not created_export:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"error": "Failed to create export."}
+            )
 
-        response = assemble_export_response_from_entity(export)
-        return response
+        export_response = assemble_export_response_from_entity(created_export)
+        return export_response
     except Exception as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": str(e)}
+        )
+
 
 @router.patch("/{export_id}/routes/{route_id}/assign", response_model=ExportResponse, status_code=status.HTTP_200_OK)
 async def assign_route_id_to_export(
-        response: Response,
         export_id: Annotated[str, Path(
             title="The ID of the export to assign the new route",
             openapi_examples={
@@ -147,6 +191,7 @@ async def assign_route_id_to_export(
                 )
             }
         )],
+        current_user: User = Depends(get_current_user),
         export_app_service: ExportApplicationService = Depends(get_export_app_service)
 ) -> Any:
     """
@@ -157,7 +202,6 @@ async def assign_route_id_to_export(
     the specified export ID does not exist, a 404 status code is returned. In case of any
     unexpected error, a 400 status code with the error message is returned.
 
-    :param response: FastAPI Response object used to manipulate HTTP response properties.
     :param export_id: The unique identifier of the export. Should be provided as a valid UUID.
     :param route_id: The ID of the route to be assigned to the export.
     :param export_app_service: Dependency injection for the export application service instance.
@@ -166,11 +210,15 @@ async def assign_route_id_to_export(
     try:
         export = await export_app_service.assign_route_id_to_export(export_id, route_id)
         if not export:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"error": "Export for given id not found"}
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"error": "Export for given id not found"}
+            )
 
-        response = assemble_export_response_from_entity(export)
-        return response
+        export_response = assemble_export_response_from_entity(export)
+        return export_response
     except Exception as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"error": str(e)}
+        )

@@ -63,3 +63,19 @@ class ExportRepository(BaseRepository[Export, ExportModel]):
             optimized_route_id=model.optimized_route_id,
             user_id=model.user_id
         )
+
+    async def get_by_user_id(self, user_id: str) -> list["Export"]:
+        """
+        Retrieves all exports associated with a specific user.
+
+        :param user_id: The unique identifier of the user.
+        :type user_id: str
+        :return: A list of Export entities belonging to the specified user.
+        :rtype: list[Export]
+        """
+        from sqlalchemy import select
+        result = await self._db.execute(
+            select(ExportModel).where(ExportModel.user_id == user_id)
+        )
+        models = result.scalars().all()
+        return [self.to_entity(model) for model in models]

@@ -32,12 +32,17 @@ class AStarAlgorithmService:
             between the nodes, including the distance in kilometers.
         :return: None
         """
+        # Create set of port names for quick lookup
+        port_names = {port.name for port in ports}
+        
         for port in ports:
             self.algorithm.add_port(port, port.name)
 
         for conn in connections:
             if not conn.is_restricted:
-                self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.distance_km)
+                # Only add connection if both ports exist in the graph
+                if conn.port_a_name in port_names and conn.port_b_name in port_names:
+                    self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.distance_km)
 
     def compute_algorithm(self, start_port_name: str, end_port_name: str, export_weight: float) -> tuple[float, list[str]]:
         """

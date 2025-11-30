@@ -31,5 +31,5 @@ class PortConnectionModel(BaseModelORM):
     is_restricted: Mapped[bool] = Column(Boolean, nullable=False)
 
     # Relationships
-    port_a = relationship("Port", foreign_keys=[port_a_id])
-    port_b = relationship("Port", foreign_keys=[port_b_id])
+    port_a = relationship("PortModel", foreign_keys=[port_a_id])
+    port_b = relationship("PortModel", foreign_keys=[port_b_id])

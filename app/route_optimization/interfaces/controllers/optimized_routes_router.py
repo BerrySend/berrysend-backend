@@ -1,6 +1,6 @@
 ﻿from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, status, Path, Response
+from fastapi import APIRouter, Depends, status, Path, Response, HTTPException
 from fastapi.openapi.models import Example
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,14 +63,18 @@ async def get_route_by_id(
     try:
         route: OptimalRoute = await route_app_service.get_optimal_route_by_id(route_id)
         if not route:
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return {"error": "Optimal route for given id not found"}
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Optimal route for given id not found"
+            )
 
         response = assemble_optimized_route_response_from_entity(route)
         return response
     except ValueError as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.post("/compute", response_model=OptimizedRouteResponse, status_code=status.HTTP_201_CREATED)
@@ -104,10 +108,14 @@ async def compute_optimal_route(
             request.parameters.time_multiplier if request.parameters else None
         )
         if not optimal_route:
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            raise ValueError("Computing of optimal route failed.")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Computing of optimal route failed."
+            )
 
         return assemble_optimized_route_response_from_entity(optimal_route)
     except ValueError as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"error": str(e)}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

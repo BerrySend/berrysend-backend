@@ -27,11 +27,17 @@ class DijkstraAlgorithmService:
             as the connecting ports and the time required for traversal.
         :return: None
         """
+        # Create set of port names for quick lookup
+        port_names = {port.name for port in ports}
+        
         for port in ports:
             self.algorithm.add_port(port, port.name)
 
         for conn in connections:
-            self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.time_hours)
+            # Only add connection if both ports exist in the graph
+            if conn.port_a_name in port_names and conn.port_b_name in port_names:
+                # Use cost instead of time to differentiate from A* (distance-based)
+                self.algorithm.add_connection(conn.port_a_name, conn.port_b_name, conn.cost_usd)
 
     def compute_algorithm(self, origin_port_name: str, destination_port_name: str, export_weight: float) -> tuple[float, list[str]]:
         """
